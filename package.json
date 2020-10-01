@@ -1,0 +1,25 @@
+{
+  "name": "aquaeye_ai_front_end",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aquaeye-ai/front-end.git"
+  },
+  "author": "John Dallas Cast",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/aquaeye-ai/front-end/issues"
+  },
+  "homepage": "https://github.com/aquaeye-ai/front-end#readme",
+  "dependencies": {
+    "express": "^4.17.1",
+    "ffmpeg": "0.0.4",
+    "opencv4nodejs": "^5.6.0",
+    "socket.io": "^2.3.0"
+  }
+}
