@@ -15,7 +15,7 @@ const streams = [
     }
 ];
 
-const hls_link = "https://manifest.googlevideo.com/api/manifest/hls_playlist/expire/1601619094/ei/NnB2X9WSIpuAsfIPs_-_8Ag/ip/98.207.8.218/id/1nWGig6pQ7Q.1/itag/96/source/yt_live_broadcast/requiressl/yes/ratebypass/yes/live/1/goi/160/sgoap/gir%3Dyes%3Bitag%3D140/sgovp/gir%3Dyes%3Bitag%3D137/hls_chunk_host/r2---sn-n4v7sney.googlevideo.com/playlist_duration/30/manifest_duration/30/vprv/1/playlist_type/DVR/initcwndbps/17920/mh/18/mm/44/mn/sn-n4v7sney/ms/lva/mv/m/mvi/2/pl/21/dover/11/keepalive/yes/fexp/23915654/mt/1601597365/disable_polymer/true/sparams/expire,ei,ip,id,itag,source,requiressl,ratebypass,live,goi,sgoap,sgovp,playlist_duration,manifest_duration,vprv,playlist_type/sig/AOq0QJ8wRQIgQAJ7ydlPiAhKh-mqp5Lm2r3lRHPXTEIDlxb_hwQJckUCIQD1FZhrKDHktQc1Us3wfImSPaH0jqg34BlWVqZTfBnipA%3D%3D/lsparams/hls_chunk_host,initcwndbps,mh,mm,mn,ms,mv,mvi,pl/lsig/AG3C_xAwRQIhAOP7NZvZItm4HztUfiOjiWcUZSafudiJpWDbKmvlgofWAiAhVNDsFchXs70br4QAOey33d6fx5CdLeKVy0lQ5qlnaw%3D%3D/playlist/index.m3u8";
+const hls_link = "https://manifest.googlevideo.com/api/manifest/hls_playlist/expire/1602064394/ei/qjt9X9-YE8-AsfIPrZSa2AY/ip/98.207.8.218/id/1nWGig6pQ7Q.1/itag/96/source/yt_live_broadcast/requiressl/yes/ratebypass/yes/live/1/goi/160/sgoap/gir%3Dyes%3Bitag%3D140/sgovp/gir%3Dyes%3Bitag%3D137/hls_chunk_host/r2---sn-n4v7knlk.googlevideo.com/playlist_duration/30/manifest_duration/30/vprv/1/playlist_type/DVR/initcwndbps/17400/mh/18/mm/44/mn/sn-n4v7knlk/ms/lva/mv/m/mvi/2/pl/21/dover/11/keepalive/yes/fexp/23915654/mt/1602042675/disable_polymer/true/sparams/expire,ei,ip,id,itag,source,requiressl,ratebypass,live,goi,sgoap,sgovp,playlist_duration,manifest_duration,vprv,playlist_type/sig/AOq0QJ8wRgIhALxnfi0XZLZjFeNtO96eDCq5DSKWhw3PFp9rckmsMDz-AiEA7oF-Ia2UnGoQb67yceQrF0-0t0BzXG6LAPuoJfFH6UM%3D/lsparams/hls_chunk_host,initcwndbps,mh,mm,mn,ms,mv,mvi,pl/lsig/AG3C_xAwRgIhAKgvEYHDORRpHb9Mycnx0PlQTXHkHfhSyoNTlS1Kba45AiEAl3FvBvAdHhAymuRWMYOaMNwYVVsTNNYtVVh3cgnD0n8%3D/playlist/index.m3u8";
 const wCap = new cv.VideoCapture(hls_link);//0);//"/home/nightrider/Videos/mashup.mp4");
 
 const FPS = 30;
@@ -56,7 +56,7 @@ app.get('/stream/:id/poster', function(req, res) {
 setInterval(() => {
   const frame = wCap.read();
   const frameEnc = cv.imencode('.jpg', frame).toString('base64');
-
+	
   io.emit('image', frameEnc);
 }, 1000 / FPS)
 
