@@ -5,6 +5,7 @@ const app = express();
 const server = require('http').Server(app);
 const io = require('socket.io')(server);
 const cors = require('cors');
+const ydl = require('youtube-dl');
 const _ = require('lodash');
 
 const streams = [
@@ -15,13 +16,40 @@ const streams = [
     }
 ];
 
-const hls_link = "https://manifest.googlevideo.com/api/manifest/hls_playlist/expire/1602155272/ei/qJ5-X6-kA6TqiwTy44D4DQ/ip/98.207.8.218/id/1nWGig6pQ7Q.1/itag/96/source/yt_live_broadcast/requiressl/yes/ratebypass/yes/live/1/goi/160/sgoap/gir%3Dyes%3Bitag%3D140/sgovp/gir%3Dyes%3Bitag%3D137/hls_chunk_host/r2---sn-n4v7sney.googlevideo.com/playlist_duration/30/manifest_duration/30/vprv/1/playlist_type/DVR/initcwndbps/17440/mh/18/mm/44/mn/sn-n4v7sney/ms/lva/mv/m/mvi/2/pl/21/dover/11/keepalive/yes/fexp/23915654/mt/1602133577/disable_polymer/true/sparams/expire,ei,ip,id,itag,source,requiressl,ratebypass,live,goi,sgoap,sgovp,playlist_duration,manifest_duration,vprv,playlist_type/sig/AOq0QJ8wRgIhAJv1Vcb_JnjDN3cRnG6jKZmJbnjAAWqEKVqwc0AkJN0-AiEAztcZc3zeb53QY3PNy2o_fg_Yl_uv-BWYzDu3b_4I6AA%3D/lsparams/hls_chunk_host,initcwndbps,mh,mm,mn,ms,mv,mvi,pl/lsig/AG3C_xAwRgIhAIFiYSH_yXepZBNOd00Lf2Y-dsPWCxidzy0RJ4wCFJd0AiEA4VqPa4aaBsOXdvsutD4_xA6ol4vrxlXf0CboWA-43B4%3D/playlist/index.m3u8";
-const wCap = new cv.VideoCapture(hls_link);//0);//"/home/nightrider/Videos/mashup.mp4");
-
+var hls_link = null;
+var wCap = null;
+var frame = null;
+var frameEncoded = null;
+const height = 1080;
+const width = 1920;
 const FPS = 30;
+const youtube_url = "https://www.youtube.com/watch?v=1nWGig6pQ7Q&feature=emb_title&ab_channel=CaliforniaAcademyofSciences";
 
-wCap.set(cv.CAP_PROP_FRAME_WIDTH, 1920);
-wCap.set(cv.CAP_PROP_FRAME_HEIGHT, 1080);
+/* Extract the HLS link for the youtube livestream so that we can intercept it.
+	We need to extract this automatically since the hls link will expire after few hours. */
+ydl.exec(youtube_url, ['--format=96', '-g'], {}, (err, output) => {
+	if (err) throw err
+
+	console.log('\nyoutube-dl finished HLS link extraction:');
+	console.log(output.join('\n'));
+	console.log('\n');
+	hls_link = output[0];
+	wCap = new cv.VideoCapture(hls_link);//0);//"/home/nightrider/Videos/mashup.mp4");
+	wCap.set(cv.CAP_PROP_FRAME_WIDTH, width);
+	wCap.set(cv.CAP_PROP_FRAME_HEIGHT, height);
+
+	// emit captured livestream video frame-by-frame and emit each frame at specified interval using socket.io 
+	setInterval(() => {
+		// read raw frame
+		frame = wCap.read();
+
+		// encode frame for efficient transfer to clients
+		frameEncoded = cv.imencode('.jpg', frame).toString('base64');
+		
+		// emit frame
+		io.emit('image', frameEncoded);
+	}, 1000 / FPS)
+});
 
 //app.get('/', (req, res) => {
 //    res.sendFile(path.join(__dirname, 'index.html'));
@@ -52,13 +80,6 @@ app.get('/stream/:id/poster', function(req, res) {
 		//cv.waitKey(0);
 		res.send(`data:image/jpeg;base64,${frameEnc}`);
 });
-
-setInterval(() => {
-  const frame = wCap.read();
-  const frameEnc = cv.imencode('.jpg', frame).toString('base64');
-	
-  io.emit('image', frameEnc);
-}, 1000 / FPS)
 
 server.listen(5000, () => {
 	console.log('Server listening on port 5000!');
