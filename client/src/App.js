@@ -1,5 +1,4 @@
 import React from 'react';
-import './App.css';
 import {
   Route,
   BrowserRouter as Router,
@@ -7,6 +6,7 @@ import {
 } from "react-router-dom";
 import Home from './Home';
 import Player from './Player';
+import './App.css';
 
 function App() {
   return (
