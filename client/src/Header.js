@@ -1,9 +1,17 @@
 import React from 'react';
-function Header() {
+import Nav from './Nav';
+
+class Header extends React.Component {
+  render() {
     return (
-        <header>
-            Aquaeye.ai
-        </header>
+        <div className="header">
+          <Nav />
+          <div className="navbar navbar-inverse navbar-embossed navbar-expand-lg">
+            <a className="navbar-brand" href="/">Aquaeye AI</a>
+          </div>
+        </div>
     );
+  }
 }
+
 export default Header;

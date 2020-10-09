@@ -2,7 +2,9 @@ import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import { withOktaAuth } from '@okta/okta-react';
 import Header from './Header';
+import Body from './Body';
 import Footer from './Footer';
+import './Home.scss'
 
 export default withOktaAuth(class Home extends Component {
   constructor(props) {
@@ -27,11 +29,17 @@ export default withOktaAuth(class Home extends Component {
       <button onClick={this.login} className="log-btn">Login</button>;
 
     return (
-      <div className="App home-page">
+      <div className="App">
         <Header />
-        <Link to='/' className="home-link">Home</Link><br/>
-        <Link to='/streams' className="home-link">Streams</Link><br/>
-        {button}
+        <Body>
+          <div className="home-page">
+            <div className="buttons-links-container">
+              <Link to='/' className="home-link">Home</Link><br/>
+              <Link to='/streams' className="home-link">Streams</Link><br/>
+              {button}
+            </div>
+          </div>
+        </Body>
         <Footer />
       </div>
     );
