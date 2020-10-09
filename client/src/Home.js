@@ -1,49 +1,39 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
+import { withOktaAuth } from '@okta/okta-react';
 import Header from './Header';
 import Footer from './Footer';
 
-export default class Home extends Component {
-  constructor() {
-    super();
-    this.state = {
-      streams: []
-    };
+export default withOktaAuth(class Home extends Component {
+  constructor(props) {
+    super(props);
+    this.login = this.login.bind(this);
+    this.logout = this.logout.bind(this);
   }
-  async componentDidMount() {
-    try {
-      const response = await fetch('http://localhost:4000/streams');
-      const data = await response.json();
-      console.log(data);
-      this.setState({ streams: [...data] });
-    } catch (error) {
-      console.log(error);
-    }
+
+  async login() {
+    this.props.authService.login('/');
   }
+
+  async logout() {
+    this.props.authService.logout('/');
+  }
+
   render() {
+    if (this.props.authState.isPending) return null;
+
+    const button = this.props.authState.isAuthenticated ?
+      <button onClick={this.logout} class="log-btn">Logout</button> :
+      <button onClick={this.login} class="log-btn">Login</button>;
+
     return (
-      <div className="App">
+      <div className="App home-page">
         <Header />
-        <div className="App App-header">
-          <div className="container">
-            <div className="row">
-              {this.state.streams.map(stream =>
-              <div className="col-md-4" key={stream.id}>
-                <Link to={`/player/${stream.id}`}>
-                  <div className="card border-0">
-                    <img id={"poster-"+stream.id} class="poster" src={`data:image/jpeg;base64,${stream.poster}`} alt={stream.name} />
-                    <div className="card-body">
-                      <p>{stream.name}</p>
-                    </div>
-                  </div>
-                </Link>
-              </div>
-              )}
-            </div>
-          </div>
-        </div>
+        <Link to='/' className="home-link">Home</Link><br/>
+        <Link to='/streams' className="home-link">Streams</Link><br/>
+        {button}
         <Footer />
       </div>
-    )
+    );
   }
-}
+});

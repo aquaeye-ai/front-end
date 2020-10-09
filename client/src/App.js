@@ -1,22 +1,18 @@
-import React from 'react';
+import React, { Component } from 'react';
 import {
-  Route,
   BrowserRouter as Router,
-  Switch,
 } from "react-router-dom";
-import Home from './Home';
-import Player from './Player';
-import './App.css';
+import AppWithRouterAccess from './AppWithRouterAccess';
+import './App.scss';
 
-function App() {
-  return (
-    <Router>
-      <Switch>
-      <Route exact path="/" component={Home}></Route>
-      <Route path="/player/:id" component={Player}></Route>
-      </Switch>
-    </Router>
-  );
+class App extends Component {
+  render() {
+    return (
+      <Router>
+        <AppWithRouterAccess/>
+      </Router>
+    );
+  }
 }
 
 export default App;

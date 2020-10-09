@@ -62,7 +62,7 @@ export default class Player extends Component {
 							<source type="video/webm" id="videoSource"></source>
 					</video>
 					<canvas id="canvasImg" height="1080" width="1920"></canvas>*/}
-					<img id="streamImage"/>
+					<img id="streamImage" alt="stream"/>
 				</header>
 				<Footer />
 			</div>

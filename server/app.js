@@ -81,6 +81,10 @@ app.get('/stream/:id/poster', function(req, res) {
 		res.send(`data:image/jpeg;base64,${frameEnc}`);
 });
 
+/* Ports:
+	React client: 3000 (implicit when running 'nodemon app' from client directory)
+	Express app: 4000
+	http server: 5000 */
 server.listen(5000, () => {
 	console.log('Server listening on port 5000!');
 });

@@ -1,7 +1,7 @@
-/*.App {
+/*
+.App {
   text-align: center;
 }
-
 .App-logo {
   height: 40vmin;
   pointer-events: none;
@@ -37,6 +37,31 @@
   }
 }*/
 
+.App {
+  &.home-page {
+    text-align: center;
+
+    .home-link {
+      color: #61dafb;
+      width: 50%;
+      margin: auto;
+
+      &:hover {
+        color: white;  
+      }
+    }
+
+    .log-btn {
+      border: 2px solid black;
+      border-radius: 25px;
+
+      &:hover {
+        color: white;
+        background-color: blue;
+      }
+    }
+  }
+}
 .App-header {
   min-height: 80vh;
   color: white;
