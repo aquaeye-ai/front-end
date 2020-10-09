@@ -27,7 +27,7 @@ export default withOktaAuth(class Login extends Component {
   }
 
   render() {
-    if (this.props.authState.isPending) return null;
+    //if (this.props.authState.isPending) return null; //this line seems to require a force reload of the browser
     return this.props.authState.isAuthenticated ?
       <Redirect to={{ pathname: '/' }}/> :
       <OktaSignInWidget
