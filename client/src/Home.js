@@ -23,8 +23,8 @@ export default withOktaAuth(class Home extends Component {
     if (this.props.authState.isPending) return null;
 
     const button = this.props.authState.isAuthenticated ?
-      <button onClick={this.logout} class="log-btn">Logout</button> :
-      <button onClick={this.login} class="log-btn">Login</button>;
+      <button onClick={this.logout} className="log-btn">Logout</button> :
+      <button onClick={this.login} className="log-btn">Login</button>;
 
     return (
       <div className="App home-page">
