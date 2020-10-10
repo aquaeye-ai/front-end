@@ -56,15 +56,13 @@ header, footer {
 }
 
 .header {
-  font-size: 28px;
-  //position: fixed;
-  top: 0;
-  width: 100%;
-  //display: block;
-  //height: 5vh;
+  //font-size: 28px;
+  //top: 0;
+  //width: 100%;
+  background-color: $yale-blue;
 
   .nav {
-    display: inline-block;
+    //display: inline-block;
   }
  
   .navbar-brand {
