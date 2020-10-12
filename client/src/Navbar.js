@@ -1,6 +1,13 @@
 import React from "react";
-import { faSearch, faBars } from "@fortawesome/free-solid-svg-icons";
+import { withOktaAuth } from '@okta/okta-react';
+import { 
+  faSearch, 
+  faBars, 
+  faVideo,
+  faSignOutAlt 
+} from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { Link } from 'react-router-dom';
 import {
   Navbar,
   NavbarToggler,
@@ -18,8 +25,9 @@ import {
   FormInput,
   Collapse
 } from "shards-react";
+import './Navbar.scss';
 
-export default class AppNavbar extends React.Component {
+export default withOktaAuth(class AppNavbar extends React.Component {
   constructor(props) {
     super(props);
 
@@ -30,6 +38,12 @@ export default class AppNavbar extends React.Component {
       dropdownOpen: false,
       collapseOpen: false
     };
+
+    this.logout = this.logout.bind(this);
+  }
+
+  async logout() {
+    this.props.authService.logout('/')
   }
 
   toggleDropdown() {
@@ -51,6 +65,15 @@ export default class AppNavbar extends React.Component {
   }
 
   render() {
+    if (this.props.authState.isPending) return null;
+
+    const logoutBtn = this.props.authState.isAuthenticated ?
+      <DropdownItem onClick={this.logout} className="log-btn">
+        Logout
+        <FontAwesomeIcon icon={faSignOutAlt} className="spaced-icon" />
+      </DropdownItem> : 
+      null; 
+
     return (
       <Navbar type="dark" theme="primary" expand="md">
         <NavbarBrand href="/">Aquaeye AI</NavbarBrand>
@@ -66,9 +89,13 @@ export default class AppNavbar extends React.Component {
                 <FontAwesomeIcon icon={faBars} />
               </DropdownToggle>
               <DropdownMenu>
-                <DropdownItem>Action</DropdownItem>
-                <DropdownItem>Another action</DropdownItem>
-                <DropdownItem>Something else here</DropdownItem>
+                <DropdownItem>
+                  <Link to='/streams'>
+                    Livestreams
+                    <FontAwesomeIcon icon={faVideo} className="spaced-icon" />
+                  </Link>
+                </DropdownItem>
+                {logoutBtn}
               </DropdownMenu>
             </Dropdown>
           </Nav>
@@ -76,4 +103,4 @@ export default class AppNavbar extends React.Component {
       </Navbar>
     );
   }
-}
+});

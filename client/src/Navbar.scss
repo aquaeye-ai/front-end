@@ -1,0 +1,21 @@
+@import './colors.scss';
+
+.App {
+  .navbar-dark {
+    .dropdown {
+      button.dropdown-item {
+        &:focus {
+          outline: 0;   
+        }
+        &:active {
+          color: $nav-dropdown-font;
+          background-color: transparent;
+        }
+
+        svg.spaced-icon {
+          margin-left: 10px; 
+        }
+      }
+    }
+  }
+}

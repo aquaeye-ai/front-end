@@ -4,7 +4,7 @@ import { withOktaAuth } from '@okta/okta-react';
 import Header from './Header';
 import Body from './Body';
 import Footer from './Footer';
-import './Home.scss'
+import './Home.scss';
 
 export default withOktaAuth(class Home extends Component {
   constructor(props) {
