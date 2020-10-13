@@ -74,32 +74,35 @@ export default withOktaAuth(class AppNavbar extends React.Component {
       </DropdownItem> : 
       null; 
 
+    const collapseMenu = this.props.authState.isAuthenticated ?
+      <Collapse open={this.state.collapseOpen} navbar>
+        <Nav navbar>
+          <Dropdown
+            open={this.state.dropdownOpen}
+            toggle={this.toggleDropdown}
+          >
+            <DropdownToggle nav caret>
+              <FontAwesomeIcon icon={faBars} />
+            </DropdownToggle>
+            <DropdownMenu>
+              <DropdownItem>
+                <Link to='/streams'>
+                  Livestreams
+                  <FontAwesomeIcon icon={faVideo} className="spaced-icon" />
+                </Link>
+              </DropdownItem>
+              {logoutBtn}
+            </DropdownMenu>
+          </Dropdown>
+        </Nav>
+      </Collapse> :
+      null;
+
     return (
       <Navbar type="dark" theme="primary" expand="md">
         <NavbarBrand href="/">Aquaeye AI</NavbarBrand>
         <NavbarToggler onClick={this.toggleNavbar} />
-
-        <Collapse open={this.state.collapseOpen} navbar>
-          <Nav navbar>
-            <Dropdown
-              open={this.state.dropdownOpen}
-              toggle={this.toggleDropdown}
-            >
-              <DropdownToggle nav caret>
-                <FontAwesomeIcon icon={faBars} />
-              </DropdownToggle>
-              <DropdownMenu>
-                <DropdownItem>
-                  <Link to='/streams'>
-                    Livestreams
-                    <FontAwesomeIcon icon={faVideo} className="spaced-icon" />
-                  </Link>
-                </DropdownItem>
-                {logoutBtn}
-              </DropdownMenu>
-            </Dropdown>
-          </Nav>
-        </Collapse>
+        {collapseMenu}
       </Navbar>
     );
   }
