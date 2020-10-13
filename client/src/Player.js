@@ -1,7 +1,9 @@
 import React, { Component } from 'react'
 import io from 'socket.io-client'
 import Header from './Header';
+import Body from './Body';
 import Footer from './Footer';
+import './Player.scss';
 
 let socket = io('http://localhost:5000')
 
@@ -56,14 +58,16 @@ export default class Player extends Component {
 		return (
 			<div className="App">
 				<Header />
-				<header className="App-header">
+        <Body>
 					<h1>{ this.state.streamData.name }</h1>
 					{/*<video controls muted autoPlay>
 							<source type="video/webm" id="videoSource"></source>
 					</video>
 					<canvas id="canvasImg" height="1080" width="1920"></canvas>*/}
-					<img id="streamImage" alt="stream"/>
-				</header>
+          <div className="stream-image-container">
+					  <img id="streamImage" alt="stream"/>
+          </div>
+        </Body>
 				<Footer />
 			</div>
 		)

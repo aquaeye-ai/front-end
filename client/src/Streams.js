@@ -1,7 +1,13 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
+import {
+  faVideo
+} from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import Header from './Header';
+import Body from './Body';
 import Footer from './Footer';
+import './Streams.scss'
 
 export default class Home extends Component {
   constructor() {
@@ -24,7 +30,7 @@ export default class Home extends Component {
     return (
       <div className="App">
         <Header />
-        <div className="App App-header">
+        <Body>
           <div className="container">
             <div className="row">
               {this.state.streams.map(stream =>
@@ -34,6 +40,7 @@ export default class Home extends Component {
                     <img id={"poster-"+stream.id} class="poster" src={`data:image/jpeg;base64,${stream.poster}`} alt={stream.name} />
                     <div className="card-body">
                       <p>{stream.name}</p>
+                      <FontAwesomeIcon icon={faVideo} />
                     </div>
                   </div>
                 </Link>
@@ -41,7 +48,7 @@ export default class Home extends Component {
               )}
             </div>
           </div>
-        </div>
+        </Body>
         <Footer />
       </div>
     )

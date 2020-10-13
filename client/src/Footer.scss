@@ -1,0 +1,12 @@
+@import './colors.scss';
+
+.App {
+  .footer {
+    color: $yale-blue;
+    font-size: 14px;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    //height: 5vh;
+  }
+}

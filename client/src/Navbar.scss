@@ -16,6 +16,14 @@
           margin-left: 10px; 
         }
       }
+
+      .dropdown-toggle {
+        color: $aquamarine;
+
+        &:hover {
+          color: $ocean-green;
+        }
+      }
     }
   }
 }

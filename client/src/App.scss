@@ -1,53 +1,5 @@
 @import './colors.scss';
 
-/*
-.App {
-  text-align: center;
-}
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  min-height: 100vh;
-  color: white;
-}
-
-.App-link {
-  color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}*/
-
-.App-header {
-  min-height: 80vh;
-  color: white;
-  background-color: #282c33;
-}
-.App-header.container {
-  min-height: 100%;
-}
-
 header, footer {
   background-color: $yale-blue;
   text-align: center;
@@ -55,62 +7,7 @@ header, footer {
   padding: 10px 0;
 }
 
-.header {
-  //font-size: 28px;
-  //top: 0;
-  //width: 100%;
-  background-color: $yale-blue;
-
-  .nav {
-    //display: inline-block;
-  }
- 
-  .navbar-brand {
-    color: $aquamarine;
-  }
-}
-
-.app-body {
-  //margin-top: 10vh;
-  background-color: $denim;
-  width: 100%;
-  //height: 90vh;
-  //display: block;
-  height: 100vh;
-}
-
-.app-footer {
-  font-size: 14px;
-  position: fixed;
-  bottom: 0;
-  width: 100%;
-  //height: 5vh;
-}
-
-.card {
-  margin: 10px 0;
-}
-.card-body {
-}
-
 a, a:hover {
   color: #282c34;
   text-decoration: none;
-}
-
-img#streamImage {
-  /* scale down 1920x1080 to something smaller while retaining 16:9 aspect ratio */
-  width: 1280px;
-  height: 720px;
-}
-
-img.poster {
-  height: 200px;
-  object-fit: cover;
-  object-position: center top;
-}
-
-p {
-  margin-bottom: 5px;
-  font-size: 16px;
 }

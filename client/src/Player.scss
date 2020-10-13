@@ -1,0 +1,23 @@
+@import './colors.scss';
+
+.App {
+  .body {
+
+    h1 {
+      text-align: center;
+      color: $aquamarine;
+    }
+
+    .stream-image-container {
+      display: flex;
+      align-items: center;
+      justify-content: center; 
+
+      img#streamImage {
+        /* scale down 1920x1080 to something smaller while retaining 16:9 aspect ratio */
+        width: 1280px;
+        height: 720px;
+      }
+    }
+  }
+}

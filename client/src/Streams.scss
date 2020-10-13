@@ -1,0 +1,40 @@
+@import './colors.scss';
+
+.App {
+  .body {
+    .container {
+      .card {
+        &:hover {
+          opacity: 90%;
+          
+          .card-body {
+            color: $ocean-green;
+          }
+        }
+
+        margin: 10px 0;
+
+        img.poster {
+          height: 200px;
+          object-fit: cover;
+          object-position: center top;
+        }
+
+        .card-body {
+          p, svg {
+            display: inline-block;
+          }
+
+          p {
+            margin-bottom: 5px;
+            font-size: 16px;
+          }
+
+          svg {
+            float: right;
+          }
+        }
+      }
+    }
+  }
+}

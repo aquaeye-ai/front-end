@@ -1,0 +1,24 @@
+@import './colors.scss';
+
+.App {
+  .header {
+    //font-size: 28px;
+    //top: 0;
+    //width: 100%;
+    background-color: $yale-blue;
+
+    .navbar {
+      &.bg-primary {
+        background-color: $yale-blue !important;
+      }
+    }
+
+    .navbar-brand {
+      color: $aquamarine;
+
+      &:hover {
+        color: $ocean-green;
+      }
+    }
+  }
+}
