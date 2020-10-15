@@ -21,7 +21,7 @@ export default withOktaAuth(class Landing extends Component {
   }
 
   async login() {
-    this.props.authService.login('/');
+    this.props.history.push('/login');
   }
 
   render() {
