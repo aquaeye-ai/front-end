@@ -20,6 +20,7 @@
         margin: 5px;
         animation: ckw;
         animation-timing-function: ease-out;
+        color: $home-icon;
 
         &.rand-rot-1 {
           animation-duration: random(15)+s;
@@ -64,6 +65,9 @@
         &:hover {
           color: $aquamarine;
           background-color: $ocean-green;
+        }
+        &:focus {
+          outline: 0;
         }
       }
     }

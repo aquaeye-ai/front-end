@@ -7,16 +7,28 @@
       text-align: center;
       color: $aquamarine;
     }
+    
+    .slider {
+      width: 100px;
+      margin-bottom: 200px;
+      margin-left: 200px;
+    }
+    
+    .container {
+      .row {
+        .col {
+          &.stream-image-container {
+            display: flex;
+            align-items: center;
+            justify-content: center; 
 
-    .stream-image-container {
-      display: flex;
-      align-items: center;
-      justify-content: center; 
-
-      img#streamImage {
-        /* scale down 1920x1080 to something smaller while retaining 16:9 aspect ratio */
-        width: 1280px;
-        height: 720px;
+            img#streamImage {
+              /* scale down 1920x1080 to something smaller while retaining 16:9 aspect ratio */
+              width: 1280px;
+              height: 720px;
+            }
+          }
+        }
       }
     }
   }

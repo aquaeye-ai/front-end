@@ -2,26 +2,36 @@
 
 .App {
   .navbar-dark {
-    .dropdown {
-      button.dropdown-item {
-        &:focus {
-          outline: 0;   
-        }
-        &:active {
-          color: $nav-dropdown-font;
-          background-color: transparent;
-        }
+    background-color: $yale-blue !important;
 
-        svg.spaced-icon {
-          margin-left: 10px; 
-        }
-      }
+    .navbar-collapse {
+      .navbar-nav {
+        .nav-item {
+          a.dropdown-toggle {
+            color: $aquamarine;
 
-      .dropdown-toggle {
-        color: $aquamarine;
+            &:hover {
+              color: $ocean-green;
+            }
+          }
 
-        &:hover {
-          color: $ocean-green;
+          .dropdown-menu {
+            a.dropdown-item {
+              color: $nav-dropdown-font;
+
+              &:focus {
+                outline: 0;   
+              }
+              &:active {
+                color: $nav-dropdown-font;
+                background-color: transparent;
+              }
+
+              svg.spaced-icon {
+                margin-left: 10px; 
+              }
+            }
+          }
         }
       }
     }

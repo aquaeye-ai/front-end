@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import {
   faVideo
 } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Header from './Header';
 import Body from './Body';
 import Footer from './Footer';
@@ -37,7 +37,7 @@ export default class Home extends Component {
               <div className="col-md-4" key={stream.id}>
                 <Link to={`/player/${stream.id}`}>
                   <div className="card border-0">
-                    <img id={"poster-"+stream.id} class="poster" src={`data:image/jpeg;base64,${stream.poster}`} alt={stream.name} />
+                    <img id={"poster-"+stream.id} className="poster" src={`data:image/jpeg;base64,${stream.poster}`} alt={stream.name} />
                     <div className="card-body">
                       <p>{stream.name}</p>
                       <FontAwesomeIcon icon={faVideo} />
