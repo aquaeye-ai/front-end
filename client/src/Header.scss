@@ -3,9 +3,14 @@
 .App {
   .header {
     //font-size: 28px;
-    //top: 0;
-    //width: 100%;
+    top: 0;
+    width: 100%;
     background-color: $yale-blue;
+    position: absolute;
+    height: 5vh;
+    //margin: auto;
+
+    display: flex;
 
     .navbar {
       &.bg-primary {

@@ -1,14 +1,18 @@
 @import '~bootstrap/scss/bootstrap';
 @import './colors.scss';
 
-header, footer {
-  background-color: $yale-blue;
-  text-align: center;
-  color: $aquamarine;
-  padding: 10px 0;
-}
+.App {
+  header, footer {
+    background-color: $yale-blue;
+    text-align: center;
+    color: $aquamarine;
+    padding: 10px 0;
+  }
 
-a, a:hover {
-  color: #282c34;
-  text-decoration: none;
+  a, a:hover {
+    color: #282c34;
+    text-decoration: none;
+  }
+
+  //font-family: Poppins,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
 }

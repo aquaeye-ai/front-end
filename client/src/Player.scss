@@ -8,26 +8,77 @@
       color: $aquamarine;
     }
     
-    .slider {
-      width: 100px;
-      margin-bottom: 200px;
-      margin-left: 200px;
-    }
-    
-    .container {
+    .container-fluid {
       .row {
+        .stream-image-container {
+          img#streamImage {
+            /* scale down 1920x1080 to something smaller while retaining 16:9 aspect ratio */
+            //width: 1280px;
+            //height: 720px;
+            width: 1344px;
+            height: 756px;
+          }
+        }
+
         .col {
-          &.stream-image-container {
+          //font-family: Poppins,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+
+          .video-controls, .modal-button-container {
             display: flex;
             align-items: center;
             justify-content: center; 
+          }
 
-            img#streamImage {
-              /* scale down 1920x1080 to something smaller while retaining 16:9 aspect ratio */
-              width: 1280px;
-              height: 720px;
+          .slider-control {
+            padding: 10px 0;
+            p, input {
+              width: 100%;
+            }
+            p {
+              margin-bottom: 0;
+              margin-right: 10px;
+              color: $home-icon;
+
+              &:hover {
+                color: $aquamarine;
+              }
             }
           }
+
+          .video-controls {
+            .btn-group-vertical {
+              &.controls {
+                .btn {
+                  background-color: $yale-blue;
+                  color: $ocean-green;
+
+                  &:hover {
+                    color: $aquamarine;
+                  }
+                }
+
+                svg {
+                  margin-left: 10px;
+                }
+              }
+            }
+          }
+
+          .modal-button-container {
+            button {
+              background-color: $yale-blue;
+              color: $ocean-green;
+
+              &:hover {
+                color: $aquamarine;
+              }
+            }
+
+            svg {
+              margin-left: 15px;
+            }
+          }
+
         }
       }
     }

@@ -4,9 +4,17 @@
   .footer {
     color: $yale-blue;
     font-size: 14px;
-    position: fixed;
+    position: absolute;
     bottom: 0;
     width: 100%;
-    //height: 5vh;
+    height: 5vh;
+    
+    footer {
+      padding: 0;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
   }
 }

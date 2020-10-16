@@ -1,12 +1,19 @@
 @import './colors.scss';
 
 .App {
+  overflow: hidden;
+  height: 100%;
   .body {
     //margin-top: 10vh;
     background-color: $denim;
     width: 100%;
     //height: 90vh;
     //display: block;
-    height: 100vh;
+    //height: 100vh;
+    top: 5vh;
+    bottom: 5vh;
+    //padding-top: 10vh;
+    overflow-y: auto;
+    position: absolute;
   }
 }
