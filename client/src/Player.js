@@ -10,6 +10,7 @@ import {
   Tooltip,
   Modal
 } from 'react-bootstrap';
+import { Drawer } from 'antd';
 import {
   faPlay,
   faPause,
@@ -33,14 +34,20 @@ export default class Player extends Component {
     this.handleK = this.handleK.bind(this);
 		this.handleCloseFishGallery = this.handleCloseFishGallery.bind(this);
 		this.handleShowFishGallery = this.handleShowFishGallery.bind(this);
-
+		this.showFishGalleryDrawer = this.showFishGalleryDrawer.bind(this);
+		this.onCloseFishGalleryDrawer = this.onCloseFishGalleryDrawer.bind(this);
+ 	 	this.showChildrenFishGalleryDrawer = this.showChildrenFishGalleryDrawer.bind(this);
+  	this.onCloseChildrenFishGalleryDrawer = this.onCloseChildrenFishGalleryDrawer.bind(this);
+  
 		this.state = {
 			streamId: this.props.match.params.id,
 			streamData: {},
 			threshold: 0.50,
       K: 1,
 			showFishGallery: false,
-			setShowFishGallery: false
+			setShowFishGallery: false,
+      fishGalleryDrawerVisible: false,
+      childrenFishGalleryDrawerVisible: false
 		};
   }
 
@@ -128,11 +135,37 @@ export default class Player extends Component {
 			showFishGallery: false
 		});
 	}
+
   handleShowFishGallery() {
 		this.setState ({
 			showFishGallery: true
 		});
 	}
+
+  showFishGalleryDrawer() {
+		console.log('here');
+    this.setState({
+      fishGalleryDrawerVisible: true
+    });
+  }
+  
+  onCloseFishGalleryDrawer() {
+    this.setState({
+      fishGalleryDrawerVisible: false
+    });
+  }
+
+  showChildrenFishGalleryDrawer() {
+    this.setState({
+      childrenFishGalleryDrawerVisible: true
+    });
+  }
+  
+  onCloseChildrenFishGalleryDrawer() {
+    this.setState({
+      childrenFishGalleryDrawerVisible: false
+    });
+  }
 
 	render() {
 		return (
@@ -183,6 +216,17 @@ export default class Player extends Component {
                         <FontAwesomeIcon icon={faUndo} />
                       </Button>
                     </OverlayTrigger>
+                  
+                    <OverlayTrigger
+                      placement="bottom"
+                      delay={{ show: 250, hide: 400 }}
+                      overlay={this.renderKTooltip}
+                    >
+                      <Button variant="primary" onClick={this.showFishGalleryDrawer}>
+                        In this exhibit	
+                        <FontAwesomeIcon icon={faFish} />
+                      </Button>
+                    </OverlayTrigger>
                   </ButtonGroup>
                 </div>
 
@@ -219,28 +263,39 @@ export default class Player extends Component {
                   </datalist>
                 </div>
 
-                <div className="modal-button-container">
-									<Button variant="primary" onClick={this.handleShowFishGallery}>
-										In this exhibit	
-                    <FontAwesomeIcon icon={faFish} />
+                <Modal show={this.state.showFishGallery} onHide={this.handleCloseFishGallery}>
+                  <Modal.Header closeButton>
+                    <Modal.Title>Fish in this exhibit</Modal.Title>
+                  </Modal.Header>
+                  <Modal.Body>Fish in this exhibit</Modal.Body>
+                  <Modal.Footer>
+                    <Button variant="primary" onClick={this.handleCloseFishGallery}>
+                      Close
+                    </Button>
+                  </Modal.Footer>
+                </Modal>
+
+								<Drawer
+									title="Multi-level drawer"
+									width={520}
+									closable={false}
+									onClose={this.onCloseFishGalleryDrawer}
+									visible={this.state.fishGalleryDrawerVisible}
+								>
+									<Button variant="primary" onClick={this.showChildrenFishGalleryDrawer}>
+										Two-level drawer
 									</Button>
+									<Drawer
+										title="Two-level Drawer"
+										width={320}
+										closable={false}
+										onClose={this.onCloseChildrenFishGalleryDrawer}
+										visible={this.state.childrenFishGalleryDrawerVisible}
+									>
+										This is two-level drawer
+									</Drawer>
+								</Drawer>
 
-									<Modal show={this.state.showFishGallery} onHide={this.handleCloseFishGallery}>
-										<Modal.Header closeButton>
-											<Modal.Title>Modal heading</Modal.Title>
-										</Modal.Header>
-										<Modal.Body>Woohoo, you're reading this text in a modal!</Modal.Body>
-										<Modal.Footer>
-											<Button variant="secondary" onClick={this.handleCloseFishGallery}>
-												Close
-											</Button>
-											<Button variant="primary" onClick={this.handleCloseFishGallery}>
-												Save Changes
-											</Button>
-										</Modal.Footer>
-									</Modal>
-
-                </div>
               </Col>
 
               <Col xs={10} className="stream-image-container">
