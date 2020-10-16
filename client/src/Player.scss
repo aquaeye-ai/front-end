@@ -6,6 +6,7 @@
     h1 {
       text-align: center;
       color: $aquamarine;
+      border-bottom: solid 3px $yale-blue;
     }
     
     .container-fluid {
@@ -13,10 +14,12 @@
         .stream-image-container {
           img#streamImage {
             /* scale down 1920x1080 to something smaller while retaining 16:9 aspect ratio */
-            //width: 1280px;
-            //height: 720px;
-            width: 1344px;
-            height: 756px;
+            ////width: 1280px;
+            ////height: 720px;
+           
+            //if go back to regular <img> element, use these 
+            //width: 1344px;
+            //height: 756px;
           }
         }
 
@@ -79,6 +82,68 @@
             }
           }
 
+        }
+      }
+    }
+  }
+}
+
+.ant-drawer {
+  .ant-drawer-wrapper-body {
+    .ant-drawer-header {
+      background-color: $yale-blue;
+      border-bottom: 1px solid $nav-dropdown-font;
+      
+      .ant-drawer-title {
+        color: $aquamarine;
+      }
+    }
+    .ant-drawer-body {
+      background-color: $denim;
+
+      button {
+        margin-top: 5px;
+        background: $yale-blue;
+        color: $ocean-green;
+
+        &:hover {
+          color: $aquamarine;
+        }
+
+        svg {
+          margin-left: 10px;
+        }
+      }
+
+      p {
+        &.detail {
+          margin-bottom: 0;
+          color: $home-icon;
+
+          span.header {
+            color: $aquamarine; 
+          }
+        }
+
+        &.header {
+          color: $home-icon;
+          margin-top: 5px;
+          margin-bottom: 0;
+          border-top: 2px solid $home-icon;
+        }
+      }
+
+      .nav {
+        .nav-link {
+          color: $ocean-green;
+
+          &:hover {
+            color: $aquamarine;
+          }
+
+          svg {
+            margin-left: 10px;
+          }
         }
       }
     }

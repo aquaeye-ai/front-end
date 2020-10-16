@@ -18,15 +18,14 @@ import {
   faBrain,
   faUndo,
 	faFish,
-  faAngleRight,
-	faExternalLinkAlt
+  faAngleRight
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Header from './Header';
 import Body from './Body';
 import Footer from './Footer';
-import ReefLagoonDatabase from './ReefLagoonDatabase';
 import './Player.scss';
+import chelmon_rostratus_url from './assets/exhibits/reef_lagoon/gallery/butterflyfishes.jpg';
 
 let socket = io('http://localhost:5000')
 
@@ -47,14 +46,34 @@ export default class Player extends Component {
 			threshold: 0.50,
       K: 1,
       parentFishGalleryDrawerVisible: false,
-      childrenFishGalleryDrawerVisible: {
-        chelmon_rostratus: false,
-        acanthurus_triostegus: false,
-        monodactylus_argenteus: false,
-        trachinotus_mookalee: false
-      }
+      childFishGalleryDrawerVisible: false
 		};
   }
+
+  fish_gallery_info = [
+    { 
+      scientific_name: 'Chelmon rostratus',
+      common_name: 'Copperband butterflyfish',
+      status: 'Least concern',
+      diet: 'Benthic invertebrates, which it finds in rock crevices with its elongated snout',
+      reproduction: 'Oviparous',
+      thumbnail_url: chelmon_rostratus_url,
+      info_urls: [
+				{
+					name: 'CalAcademy',
+					url: 'https://www.calacademy.org/explore-science/reef-lagoon-field-guide?mpweb=1018-12008-18033'
+				},
+				{	
+					name: 'FishBase',
+					url: 'https://www.fishbase.in/summary/5483'
+				},
+				{
+					name: 'Wikipedia',
+        	url: 'https://en.wikipedia.org/wiki/Chelmon'
+				}
+      ] 
+    }
+  ]
 
   async componentDidMount() {
 		try {
@@ -147,30 +166,24 @@ export default class Player extends Component {
     });
   };
 
-  showChildFishGalleryDrawer(id) {
-    var visibleState = this.state.childrenFishGalleryDrawerVisible;
-    visibleState[id] = true;
-
+  showChildFishGalleryDrawer() {
     this.setState({
-      childrenFishGalleryDrawerVisible: visibleState
+      childFishGalleryDrawerVisible: true
     });
   };
   
-  onCloseChildFishGalleryDrawer(id) {
-    var visibleState = this.state.childrenFishGalleryDrawerVisible;
-    visibleState[id] = false;
-
+  onCloseChildFishGalleryDrawer() {
     this.setState({
-      childrenFishGalleryDrawerVisible: visibleState
+      childFishGalleryDrawerVisible: false
     });
   };
 
   renderFishGalleryChildrenDrawers = (gallery_info) => (
-    gallery_info.map((fish, idx) => (
-      <React.Fragment key={idx}>
+    gallery_info.map(fish => (
+      <>
         <h1>{fish.common_name}</h1>
         <Image src={fish.thumbnail_url} fluid rounded/>
-        <Button variant="primary" onClick={() => this.showChildFishGalleryDrawer(fish.scientific_name)}>
+        <Button variant="primary" onClick={this.showChildFishGalleryDrawer}>
           Learn more 
           <FontAwesomeIcon icon={faAngleRight} />
         </Button>
@@ -178,8 +191,8 @@ export default class Player extends Component {
           title={fish.common_name}
           width={320}
           closable={false}
-          onClose={() => this.onCloseChildFishGalleryDrawer(fish.scientific_name)}
-          visible={this.state.childrenFishGalleryDrawerVisible[fish.scientific_name]}
+          onClose={this.onCloseChildFishGalleryDrawer}
+          visible={this.state.childFishGalleryDrawerVisible}
         >
           <Image src={fish.thumbnail_url} fluid rounded/>
           <p className="detail">
@@ -201,16 +214,13 @@ export default class Player extends Component {
 					<p className="detail header">Further resources</p>
           <Nav className="flex-column">
 						{
-							fish.info_urls.map((info, idy) => (
-								<Nav.Link href={info.url} target="_blank" key={idx+idy}>
-									{idy}. {info.name}
-          				<FontAwesomeIcon icon={faExternalLinkAlt} />
-								</Nav.Link>
+							fish.info_urls.map((idx, info) => (
+								<Nav.Link href={info.url} target="_blank">{idx}. {info.name}</Nav.Link>
 							))
 						}
 					</Nav> 
         </Drawer>
-      </React.Fragment>
+      </>
     ))
   );
 
@@ -317,7 +327,7 @@ export default class Player extends Component {
 									onClose={this.onCloseParentFishGalleryDrawer}
 									visible={this.state.parentFishGalleryDrawerVisible}
 								>
-                  {this.renderFishGalleryChildrenDrawers(ReefLagoonDatabase)}
+                  {this.renderFishGalleryChildrenDrawers(this.fish_gallery_info)}
 								</Drawer>
 
               </Col>
