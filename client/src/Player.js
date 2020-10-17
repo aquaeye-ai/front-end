@@ -166,52 +166,64 @@ export default class Player extends Component {
   };
 
   renderFishGalleryChildrenDrawers = (gallery_info) => (
-    gallery_info.map((fish, idx) => (
-      <React.Fragment key={idx}>
-        <h1>{fish.common_name}</h1>
-        <Image src={fish.thumbnail_url} fluid rounded/>
-        <Button variant="primary" onClick={() => this.showChildFishGalleryDrawer(fish.scientific_name)}>
-          Learn more 
-          <FontAwesomeIcon icon={faAngleRight} />
-        </Button>
-        <Drawer
-          title={fish.common_name}
-          width={320}
-          closable={false}
-          onClose={() => this.onCloseChildFishGalleryDrawer(fish.scientific_name)}
-          visible={this.state.childrenFishGalleryDrawerVisible[fish.scientific_name]}
-        >
-          <Image src={fish.thumbnail_url} fluid rounded/>
-          <p className="detail">
-            <span className="header">Species: </span>
-            {fish.scientific_name}
+    Object.keys(gallery_info).map((key, idx) => {
+      let fish = gallery_info[key]
+
+      return (
+        <React.Fragment key={idx}>
+          <h1>{fish.common_name}</h1>
+          <Image src={fish.thumbnail.url} fluid rounded/>
+          <p className="photo-credit">
+            Photo credit: <a href={fish.thumbnail.credit.owner.url}>{fish.thumbnail.credit.owner.name}</a>,&nbsp;  
+            <a href={fish.thumbnail.credit.license.url}>{fish.thumbnail.credit.license.name}</a> via Wikimedia Commons
           </p>
-          <p className="detail">
-            <span className="header">Status: </span>
-            {fish.status}
-          </p>
-          <p className="detail">
-            <span className="header">Diet: </span>
-            {fish.diet}
-          </p>
-          <p className="detail">
-            <span className="header">Reproduction: </span>
-            {fish.reproduction}
-          </p>
-					<p className="detail header">Further resources</p>
-          <Nav className="flex-column">
-						{
-							fish.info_urls.map((info, idy) => (
-								<Nav.Link href={info.url} target="_blank" key={idx+idy}>
-									{idy}. {info.name}
-          				<FontAwesomeIcon icon={faExternalLinkAlt} />
-								</Nav.Link>
-							))
-						}
-					</Nav> 
-        </Drawer>
-      </React.Fragment>
-    ))
+          <Button variant="primary" onClick={() => this.showChildFishGalleryDrawer(fish.scientific_name)}>
+            Learn more 
+            <FontAwesomeIcon icon={faAngleRight} />
+          </Button>
+          <Drawer
+            title={fish.common_name}
+            width={320}
+            closable={false}
+            onClose={() => this.onCloseChildFishGalleryDrawer(fish.scientific_name)}
+            visible={this.state.childrenFishGalleryDrawerVisible[fish.scientific_name]}
+          >
+            <Image src={fish.thumbnail.url} fluid rounded/>
+            <p className="photo-credit">
+              Photo credit: <a href={fish.thumbnail.credit.owner.url}>{fish.thumbnail.credit.owner.name}</a>,&nbsp;  
+              <a href={fish.thumbnail.credit.license.url}>{fish.thumbnail.credit.license.name}</a> via Wikimedia Commons
+            </p>
+            <p className="detail">
+              <span className="header">Species: </span>
+              {fish.scientific_name}
+            </p>
+            <p className="detail">
+              <span className="header">Status: </span>
+              {fish.status}
+            </p>
+            <p className="detail">
+              <span className="header">Diet: </span>
+              {fish.diet}
+            </p>
+            <p className="detail">
+              <span className="header">Reproduction: </span>
+              {fish.reproduction}
+            </p>
+            <p className="detail header">Learn more</p>
+            <Nav className="flex-column">
+              {
+                fish.info_urls.map((info, idy) => (
+                  <Nav.Link href={info.url} target="_blank" key={idx+idy}>
+                    {idy}. {info.name}
+                    <FontAwesomeIcon icon={faExternalLinkAlt} />
+                  </Nav.Link>
+                ))
+              }
+            </Nav> 
+          </Drawer>
+        </React.Fragment>
+      )
+    })
   );
 
 	render() {

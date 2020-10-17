@@ -146,6 +146,16 @@
           }
         }
       }
+
+      .photo-credit {
+        a {
+          color: $ocean-green;
+
+          &:hover {
+            color: $aquamarine;
+          }
+        }
+      }
     }
   }
 }
