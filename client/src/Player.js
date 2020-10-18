@@ -96,6 +96,27 @@ export default class Player extends Component {
 			console.log(error);
 		}
 	}
+  
+  play() {
+    try {
+			socket.on('image', image => {
+				const imageElm = document.getElementById('streamImage');
+				imageElm.src = `data:image/jpeg;base64,${image}`;
+			});
+    } catch (error) {
+      console.log('play:error');
+      console.log(error);
+    }
+  }
+
+  pause() {
+    try {
+      socket.off('image');
+    } catch (error) {
+      console.log('pause:error');
+      console.log(error);
+    }
+  }
 
   handleThreshold(e) {
 		console.log(e.target.value);
@@ -245,11 +266,11 @@ export default class Player extends Component {
               <Col>
                 <div className="video-controls">
                   <ButtonGroup vertical className="controls">
-                    <Button>
-                      Start
+                    <Button onClick={this.play}>
+                      Play
                       <FontAwesomeIcon icon={faPlay} />
                     </Button>
-                    <Button>
+                    <Button onClick={this.pause}>
                       Pause
                       <FontAwesomeIcon icon={faPause} />
                     </Button>
