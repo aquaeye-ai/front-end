@@ -40,12 +40,23 @@ export default class Player extends Component {
 		this.onCloseParentFishGalleryDrawer = this.onCloseParentFishGalleryDrawer.bind(this);
  	 	this.showChildFishGalleryDrawer = this.showChildFishGalleryDrawer.bind(this);
   	this.onCloseChildFishGalleryDrawer = this.onCloseChildFishGalleryDrawer.bind(this);
+    this.init = this.init.bind(this);
+    this.mouseDown = this.mouseDown.bind(this);
+    this.mouseUp = this.mouseUp.bind(this);
+    this.mouseMove = this.mouseMove.bind(this);
   
 		this.state = {
 			streamId: this.props.match.params.id,
 			streamData: {},
 			threshold: 0.50,
       K: 1,
+      drag: false,
+      rect: {
+        x: 0,
+        y: 0,
+        h: 0,
+        w: 0
+      },
       parentFishGalleryDrawerVisible: false,
       childrenFishGalleryDrawerVisible: {
         chelmon_rostratus: false,
@@ -57,6 +68,7 @@ export default class Player extends Component {
   }
 
   async componentDidMount() {
+    // connect to the broadcasting port for the stream
 		try {
 			const res = await fetch(`http://localhost:4000/stream/${this.state.streamId}/data`);
 			const data = await res.json();
@@ -84,6 +96,15 @@ export default class Player extends Component {
 			console.log('componentDidMount:error');
 			console.log(error);
 		}
+
+    this.canvas = document.getElementById('streamCanvas');
+    this.canvas.height = 756;
+    this.canvas.width = 1344;
+    this.ctx = this.canvas.getContext('2d');
+    this.canvasX = this.canvas.offsetLeft;
+    this.canvasY = this.canvas.offsetTop;
+
+    this.init();
   }
 
   async componentWillUnmount() {
@@ -96,6 +117,75 @@ export default class Player extends Component {
 			console.log(error);
 		}
 	}
+
+  init() {
+    this.canvas.addEventListener('mousedown', this.mouseDown, false);
+    this.canvas.addEventListener('mouseup', this.mouseUp, false);
+    this.canvas.addEventListener('mousemove', this.mouseMove, false);
+  }
+
+  mouseDown(e) {
+    console.log('mousedown');
+    console.log(this.canvasX);
+    console.log(this.canvasY);
+    console.log(e.pageX);
+    console.log(e.pageY);
+    console.log(e.pageX - this.canvasX + 0);
+    console.log(e.pageY - this.canvasY + 0);
+    
+    const rect = this.canvas.getBoundingClientRect();
+    console.log(e.clientX);
+    console.log(e.clientY);
+    console.log(rect.left);
+    console.log(rect.top);
+    console.log(e.clientX - rect.left);
+    console.log(e.clientY - rect.right);
+    console.log(e.offsetX);
+    console.log(e.offsetY);
+
+    this.setState({
+      rect: {
+        x: e.offsetX, 
+        y: e.offsetY,
+        h: 0,
+        w: 0 
+      },
+      drag: true
+    });
+
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+  }
+
+  mouseUp(e) {
+    console.log('mouseup');
+    
+    this.setState({
+      drag: false
+    });
+  }
+
+  mouseMove(e) {
+    if (this.state.drag) {
+      this.setState({
+        rect: {
+          x: this.state.rect.x,
+          y: this.state.rect.y,
+          h: e.offsetY - this.state.rect.y, 
+          w: e.offsetX - this.state.rect.x
+        }
+      });
+
+      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+      this.draw();
+    };
+  }
+
+  draw() {
+    this.ctx.lineWidth = 1.5;
+    this.ctx.strokeStyle = 'rgb(0, 255, 255)';
+    console.log(this.state.rect);
+    this.ctx.strokeRect(this.state.rect.x, this.state.rect.y, this.state.rect.w, this.state.rect.h);
+  }
   
   play() {
     try {
@@ -355,9 +445,13 @@ export default class Player extends Component {
 
               </Col>
 
-              <Col xs={10} className="stream-image-container">
-                {/*<img id="streamImage" alt="stream"/>*/}
-					      <Image id="streamImage" fluid alt="stream"/>
+              <Col xs={10}>
+                <div className="stream-image-outer-container">
+                  <div className="stream-image-inner-container">
+                    <Image id="streamImage" alt="stream"/>
+                    <canvas id="streamCanvas"></canvas>
+                  </div>
+                </div>
               </Col>
             </Row>
           </Container>

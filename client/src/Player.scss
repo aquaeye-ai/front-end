@@ -11,15 +11,34 @@
     
     .container-fluid {
       .row {
-        .stream-image-container {
-          img#streamImage {
+        .col, .col-10 {
+          .stream-image-outer-container {
             /* scale down 1920x1080 to something smaller while retaining 16:9 aspect ratio */
-            ////width: 1280px;
-            ////height: 720px;
-           
-            //if go back to regular <img> element, use these 
-            //width: 1344px;
-            //height: 756px;
+            width: 1344px;
+            height: 756px;
+
+            .stream-image-inner-container {
+              width: 100%;
+              height: 100%;
+              position: relative; 
+
+              img#streamImage {
+                height: 100%;
+                width: 100%;
+                position: absolute; 
+                top: 0px;
+                left: 0px;
+              }
+
+              canvas#streamCanvas {
+                height: 100%;
+                width: 100%;
+                position: absolute;
+                top: 0px;
+                left: 0px;
+                background-color: rgba(255, 0, 0, 0);
+              }
+            }
           }
         }
 
