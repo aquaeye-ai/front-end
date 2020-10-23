@@ -68,17 +68,17 @@ app.get('/streams', function(req, res) {
 	res.json(streams);
 });
 app.get('/stream/:id/data', function(req, res) {
-    const id = parseInt(req.params.id, 10);
-    res.json(streams[id]);
+  const id = parseInt(req.params.id, 10);
+  res.json(streams[id]);
 });
 app.get('/stream/:id/poster', function(req, res) {
-    //thumbsupply.generateThumbnail(`assets/${req.params.id}.mp4`)
-    //.then(thumb => res.sendFile(thumb))
-		const frame = wCap.read();
-		const frameEnc = cv.imencode('.jpg', frame).toString('base64');
-		//cv.imshow('thumbnail', frame);
-		//cv.waitKey(0);
-		res.send(`data:image/jpeg;base64,${frameEnc}`);
+  //thumbsupply.generateThumbnail(`assets/${req.params.id}.mp4`)
+  //.then(thumb => res.sendFile(thumb))
+  const frame = wCap.read();
+  const frameEnc = cv.imencode('.jpg', frame).toString('base64');
+  //cv.imshow('thumbnail', frame);
+  //cv.waitKey(0);
+  res.send(`data:image/jpeg;base64,${frameEnc}`);
 });
 
 /* Ports:
