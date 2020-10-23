@@ -36,6 +36,7 @@ export default class Player extends Component {
 
     this.handleThreshold = this.handleThreshold.bind(this);
     this.handleK = this.handleK.bind(this);
+    this.undo = this.undo.bind(this);
 		this.showParentFishGalleryDrawer = this.showParentFishGalleryDrawer.bind(this);
 		this.onCloseParentFishGalleryDrawer = this.onCloseParentFishGalleryDrawer.bind(this);
  	 	this.showChildFishGalleryDrawer = this.showChildFishGalleryDrawer.bind(this);
@@ -125,24 +126,6 @@ export default class Player extends Component {
   }
 
   mouseDown(e) {
-    console.log('mousedown');
-    console.log(this.canvasX);
-    console.log(this.canvasY);
-    console.log(e.pageX);
-    console.log(e.pageY);
-    console.log(e.pageX - this.canvasX + 0);
-    console.log(e.pageY - this.canvasY + 0);
-    
-    const rect = this.canvas.getBoundingClientRect();
-    console.log(e.clientX);
-    console.log(e.clientY);
-    console.log(rect.left);
-    console.log(rect.top);
-    console.log(e.clientX - rect.left);
-    console.log(e.clientY - rect.right);
-    console.log(e.offsetX);
-    console.log(e.offsetY);
-
     this.setState({
       rect: {
         x: e.offsetX, 
@@ -157,8 +140,6 @@ export default class Player extends Component {
   }
 
   mouseUp(e) {
-    console.log('mouseup');
-    
     this.setState({
       drag: false
     });
@@ -183,7 +164,6 @@ export default class Player extends Component {
   draw() {
     this.ctx.lineWidth = 1.5;
     this.ctx.strokeStyle = 'rgb(0, 255, 255)';
-    console.log(this.state.rect);
     this.ctx.strokeRect(this.state.rect.x, this.state.rect.y, this.state.rect.w, this.state.rect.h);
   }
   
@@ -204,6 +184,15 @@ export default class Player extends Component {
       socket.off('image');
     } catch (error) {
       console.log('pause:error');
+      console.log(error);
+    }
+  }
+  
+  undo() {
+    try {
+      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    } catch (error) {
+      console.log('undo:error');
       console.log(error);
     }
   }
@@ -234,6 +223,18 @@ export default class Player extends Component {
     </Tooltip>
   );
   
+  renderPlayTooltip = (props) => (
+    <Tooltip id="threshold-tooltip" {...props}>
+      Play livestream
+    </Tooltip>
+  );
+  
+  renderPauseTooltip = (props) => (
+    <Tooltip id="threshold-tooltip" {...props}>
+      Pause livestream
+    </Tooltip>
+  );
+  
   renderPredictTooltip = (props) => (
     <Tooltip id="predict-tooltip" {...props}>
       Ask the AI what fish is in current selection
@@ -242,7 +243,7 @@ export default class Player extends Component {
   
   renderUndoTooltip = (props) => (
     <Tooltip id="undo-tooltip" {...props}>
-      Undo latest selection
+      Remove selection
     </Tooltip>
   );
 
@@ -356,14 +357,27 @@ export default class Player extends Component {
               <Col>
                 <div className="video-controls">
                   <ButtonGroup vertical className="controls">
-                    <Button onClick={this.play}>
-                      Play
-                      <FontAwesomeIcon icon={faPlay} />
-                    </Button>
-                    <Button onClick={this.pause}>
-                      Pause
-                      <FontAwesomeIcon icon={faPause} />
-                    </Button>
+                    <OverlayTrigger
+                      placement="bottom"
+                      delay={{ show: 250, hide: 400 }}
+                      overlay={this.renderPlayTooltip}
+                    >
+                      <Button onClick={this.play}>
+                        Play
+                        <FontAwesomeIcon icon={faPlay} />
+                      </Button>
+                    </OverlayTrigger>
+
+                    <OverlayTrigger
+                      placement="bottom"
+                      delay={{ show: 250, hide: 400 }}
+                      overlay={this.renderPauseTooltip}
+                    >
+                      <Button onClick={this.pause}>
+                        Pause
+                        <FontAwesomeIcon icon={faPause} />
+                      </Button>
+                    </OverlayTrigger>
                     
                     <OverlayTrigger
                       placement="bottom"
@@ -381,7 +395,7 @@ export default class Player extends Component {
                       delay={{ show: 250, hide: 400 }}
                       overlay={this.renderUndoTooltip}
                     >
-                      <Button>
+                      <Button onClick={this.undo}>
                         Undo
                         <FontAwesomeIcon icon={faUndo} />
                       </Button>
