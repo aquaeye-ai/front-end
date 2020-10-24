@@ -37,6 +37,7 @@ export default class Player extends Component {
     this.handleThreshold = this.handleThreshold.bind(this);
     this.handleK = this.handleK.bind(this);
     this.undo = this.undo.bind(this);
+    this.predict = this.predict.bind(this);
 		this.showParentFishGalleryDrawer = this.showParentFishGalleryDrawer.bind(this);
 		this.onCloseParentFishGalleryDrawer = this.onCloseParentFishGalleryDrawer.bind(this);
  	 	this.showChildFishGalleryDrawer = this.showChildFishGalleryDrawer.bind(this);
@@ -184,6 +185,30 @@ export default class Player extends Component {
       socket.off('image');
     } catch (error) {
       console.log('pause:error');
+      console.log(error);
+    }
+  }
+  
+  async predict() {
+    console.log('predict');
+    const settings = {
+      method: 'GET'
+      //headers: {
+      //  Accept: 'application/json',
+      //  'Content-type': 'application/json',
+      //  'Access-Control-Allow-Origin': '*',
+      //  'Access-Control-Allow-Headers': 'Access-Control-Allow-Origin, Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers,Authorization',
+      //  'Access-Control-Allow-Methods': 'GET,HEAD,OPTIONS,POST,PUT',
+      //  'Access-Control-Allow-Credentials': 'true'
+      //}
+    };
+
+    try {
+      const response = await fetch('http://localhost:8000/quote', settings);
+      const data = await response.json();
+      console.log(data);
+    } catch (error) {
+      console.log('predict:error');
       console.log(error);
     }
   }
@@ -384,7 +409,7 @@ export default class Player extends Component {
                       delay={{ show: 250, hide: 400 }}
                       overlay={this.renderPredictTooltip}
                     >
-                      <Button>
+                      <Button onClick={this.predict}>
                         Predict
                         <FontAwesomeIcon icon={faBrain} />
                       </Button>
