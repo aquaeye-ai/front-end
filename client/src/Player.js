@@ -190,28 +190,57 @@ export default class Player extends Component {
   }
   
   async predict() {
-    console.log('predict');
-    const settings = {
-      method: 'GET'
-      //headers: {
-      //  Accept: 'application/json',
-      //  'Content-type': 'application/json',
+    console.log('predict/one');
+    const imageElm = document.getElementById('streamImage');
+    const jsonData = {
+      image: {
+        id: 0,
+        height: 756,
+        width: 1344,
+        depth: 3,
+        K: 1,
+        data: imageElm.src
+      }
+    }
+    const config = {
+      method: 'POST',
+      body: JSON.stringify(jsonData),
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
       //  'Access-Control-Allow-Origin': '*',
       //  'Access-Control-Allow-Headers': 'Access-Control-Allow-Origin, Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers,Authorization',
       //  'Access-Control-Allow-Methods': 'GET,HEAD,OPTIONS,POST,PUT',
       //  'Access-Control-Allow-Credentials': 'true'
-      //}
+      }
     };
+    console.log(config);
 
     try {
-      const response = await fetch('http://localhost:8000/quote', settings);
+      const response = await fetch('http://localhost:4000/predict/one', config);
       const data = await response.json();
       console.log(data);
     } catch (error) {
-      console.log('predict:error');
+      console.log('predict/one:error');
       console.log(error);
     }
   }
+  
+  //async predict() {
+  //  console.log('predict');
+  //  const settings = {
+  //    method: 'GET'
+  //  };
+
+  //  try {
+  //    const response = await fetch('http://localhost:4000/quote', settings);
+  //    const data = await response.json();
+  //    console.log(data);
+  //  } catch (error) {
+  //    console.log('predict:error');
+  //    console.log(error);
+  //  }
+  //}
   
   undo() {
     try {

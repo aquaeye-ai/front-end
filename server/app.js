@@ -7,6 +7,7 @@ const io = require('socket.io')(server);
 const cors = require('cors');
 const ydl = require('youtube-dl');
 const _ = require('lodash');
+const axios = require('axios').default;
 
 const streams = [
     {
@@ -51,13 +52,22 @@ ydl.exec(youtube_url, ['--format=96', '-g'], {}, (err, output) => {
 	}, 1000 / FPS)
 });
 
+app.use(express.json({
+  limit: "50mb"
+})); // to support JSON-encoded bodies, see: https://stackoverflow.com/questions/5710358/how-to-retrieve-post-query-parameters
+app.use(express.urlencoded({
+  extended: true,
+  limit: "50mb"
+})); // to support URL-encoded bodies, see: https://stackoverflow.com/questions/5710358/how-to-retrieve-post-query-parameters
+app.use(cors()); // to support CORS
+
 //app.get('/', (req, res) => {
 //    res.sendFile(path.join(__dirname, 'index.html'));
 //});
-app.use(cors());
 app.get('/streams', function(req, res) {
 	_.each(streams, function (stream) {
 		frame = wCap.read();
+    console.log(frame);
 		//cv.imshow('thumbnail', frame);
 		//cv.waitKey(0);
 		const frameMat = new cv.Mat(frame, cv.CV_8UC3);
@@ -81,10 +91,59 @@ app.get('/stream/:id/poster', function(req, res) {
   res.send(`data:image/jpeg;base64,${frameEnc}`);
 });
 
-/* Ports:
+// POST, predict/one
+app.post('/predict/one', async function(req, res) {
+  try {
+    console.log("K: " + req.body.image.K);
+    console.log("Id: " + req.body.image.id);
+    console.log("Height: " + req.body.image.height);
+    console.log("Width: " + req.body.image.width);
+    console.log("Depth: " + req.body.image.depth);
+
+    // convert base64 encoded string data to Mat for use with opencv: https://github.com/justadudewhohacks/opencv4nodejs
+    base64data = req.body.image.data.replace('data:image/jpeg;base64','');
+    imgBuffer = Buffer.from(base64data, 'base64');
+    cvImage = cv.imdecode(imgBuffer);
+		cvImage = cvImage.resize(1080, 1920);
+		const imgEnc = cv.imencode('.jpg', frame).toString('base64');
+    //cv.imshow('imgBuffer', cvImage);
+    //cv.waitKey(0);
+
+    const json_payload = {
+      K: req.body.image.K, 
+      id: req.body.image.id, 
+      height: 1080, 
+      width: 1920, 
+      depth: req.body.image.depth,
+      image: imgEnc 
+    };
+    const model_response = await axios.post('http://localhost:8000/eval', json_payload);
+    console.log(model_response);
+    //res.json(response['data']);
+    res.json(streams[0]);
+  } catch (error) {
+    console.error(error);
+  }
+});
+
+// GET, simple route for testing model api
+app.get('/quote', async function(req, res) {
+  try {
+    const response = await axios.get('http://localhost:8000/quote');
+    console.log(response);
+    res.json(response['data']);
+  } catch (error) {
+    console.error(error);
+  }
+});
+
+/* 
+Ports:
 	React client: 3000 (implicit when running 'nodemon app' from client directory)
 	Express app: 4000
-	http server: 5000 */
+	http server: 5000
+  Model api server: 8000
+*/
 server.listen(5000, () => {
 	console.log('Server listening on port 5000!');
 });
