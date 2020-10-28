@@ -12,6 +12,7 @@ const database = {
   chelmon_rostratus: { 
     scientific_name: 'Chelmon rostratus',
     common_name: 'Copperband butterflyfish',
+    common_group_name: 'butterflyfishes',
     status: 'Least concern',
     diet: 'Benthic invertebrates, which it finds in rock crevices with its elongated snout',
     reproduction: 'Oviparous',
@@ -46,6 +47,7 @@ const database = {
   acanthurus_triostegus: { 
     scientific_name: 'Acanthurus triostegus',
     common_name: 'Convict surgeon',
+    common_group_name: 'surgeonfishes',
     status: 'Least concern',
     diet: 'Benthic algae',
     reproduction: 'Oviparous broadcast spawners; found in large groups (up to several hundred) that exhibit mass spawning behavior',
@@ -80,6 +82,7 @@ const database = {
   monodactylus_argenteus: { 
     scientific_name: 'Monodactylus argenteus',
     common_name: 'Diamond fish (or Mono)',
+    common_group_name: 'moonyfishes',
     status: 'Not yet assessed',
     diet: 'Plankton and detritus',
     reproduction: 'Broadcast spawners; males and females shed gametes into the water, where fertilization occurs',
@@ -114,6 +117,7 @@ const database = {
   trachinotus_mookalee: { 
     scientific_name: 'Trachinotus mookalee',
     common_name: 'Indian pompano',
+    common_group_name: 'pompanos',
     status: 'Not yet assessed',
     diet: 'Small fishes and crustaceans',
     reproduction: 'Broadcast spawners',
@@ -148,6 +152,7 @@ const database = {
   rhinoptera_javanica: { 
     scientific_name: 'Rhinoptera javanica',
     common_name: 'Cownose ray',
+    common_group_name: 'stingrays',
     status: 'Near threatened',
     diet: 'Clams, oysters, other invertebrates',
     reproduction: 'Ovoviviparous—rays produce eggs that remain inside the mother’s body until they hatch, resulting in a live birth',
@@ -182,6 +187,7 @@ const database = {
   taeniura_lymma: { 
     scientific_name: 'Taeniura lymma',
     common_name: 'Blue-spotted ribbontail ray',
+    common_group_name: 'stingrays',
     status: 'Near threatened',
     diet: 'Mollusks, worms, shrimp, clams',
     reproduction: 'Ovoviviparous',
@@ -216,6 +222,7 @@ const database = {
   himantura_uarnak: { 
     scientific_name: 'Himantura uarnak',
     common_name: 'Honeycomb ray',
+    common_group_name: 'stingrays',
     status: 'Vulnerable',
     diet: 'Crabs, shrimps, bivalves, gastropods, worms, jellyfish, bony fishes',
     reproduction: 'Viviparous',
@@ -250,6 +257,7 @@ const database = {
   neotrygon_kuhlii: { 
     scientific_name: 'Neotrygon kuhlii',
     common_name: 'Bluespotted stingray',
+    common_group_name: 'stingrays',
     status: 'Data deficien',
     diet: 'Shrimp, crabs',
     reproduction: 'Ovoviviparous',

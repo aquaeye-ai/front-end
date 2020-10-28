@@ -94,20 +94,12 @@ app.get('/stream/:id/poster', function(req, res) {
 // POST, predict/one
 app.post('/predict/one', async function(req, res) {
   try {
-    console.log("K: " + req.body.image.K);
-    console.log("Id: " + req.body.image.id);
-    console.log("Height: " + req.body.image.height);
-    console.log("Width: " + req.body.image.width);
-    console.log("Depth: " + req.body.image.depth);
-
-    // convert base64 encoded string data to Mat for use with opencv: https://github.com/justadudewhohacks/opencv4nodejs
+    // resize image to original size and convert base64 encoded string data to Mat for use with opencv: https://github.com/justadudewhohacks/opencv4nodejs
     base64data = req.body.image.data.replace('data:image/jpeg;base64','');
     imgBuffer = Buffer.from(base64data, 'base64');
     cvImage = cv.imdecode(imgBuffer);
-		cvImage = cvImage.resize(1080, 1920);
-		const imgEnc = cv.imencode('.jpg', frame).toString('base64');
-    //cv.imshow('imgBuffer', cvImage);
-    //cv.waitKey(0);
+		cvImage = cvImage.resize(1080, 1920); // resize to original frame size (front-end alters size to fit page)
+		const imgEnc = cv.imencode('.jpg', frame).toString('base64'); // base64 encode to transmit over network
 
     const json_payload = {
       K: req.body.image.K, 
@@ -118,9 +110,7 @@ app.post('/predict/one', async function(req, res) {
       image: imgEnc 
     };
     const model_response = await axios.post('http://localhost:8000/eval', json_payload);
-    console.log(model_response);
-    //res.json(response['data']);
-    res.json(streams[0]);
+    res.json(model_response.data);
   } catch (error) {
     console.error(error);
   }

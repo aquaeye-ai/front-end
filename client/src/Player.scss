@@ -175,6 +175,12 @@
           }
         }
       }
+
+      div {
+        &.divider {
+          border-bottom: 2px solid $home-icon;
+        }
+      }
     }
   }
 }

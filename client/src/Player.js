@@ -19,13 +19,15 @@ import {
   faUndo,
 	faFish,
   faAngleRight,
-	faExternalLinkAlt
+	faExternalLinkAlt,
+  faPoll
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Header from './Header';
 import Body from './Body';
 import Footer from './Footer';
 import ReefLagoonDatabase from './ReefLagoonDatabase';
+import Fmt from './Fmt';
 import './Player.scss';
 
 let socket = io('http://localhost:5000')
@@ -34,18 +36,31 @@ export default class Player extends Component {
   constructor(props) {
 		super(props);
 
-    this.handleThreshold = this.handleThreshold.bind(this);
-    this.handleK = this.handleK.bind(this);
+    this.init = this.init.bind(this);
+
+    // menu buttons
+    this.play = this.play.bind(this);
     this.undo = this.undo.bind(this);
+    this.handleK = this.handleK.bind(this);
     this.predict = this.predict.bind(this);
+    this.handleThreshold = this.handleThreshold.bind(this);
+
+    // mouse events
+    this.mouseDown = this.mouseDown.bind(this);
+    this.mouseUp = this.mouseUp.bind(this);
+    this.mouseMove = this.mouseMove.bind(this);
+
+    // fish gallery
 		this.showParentFishGalleryDrawer = this.showParentFishGalleryDrawer.bind(this);
 		this.onCloseParentFishGalleryDrawer = this.onCloseParentFishGalleryDrawer.bind(this);
  	 	this.showChildFishGalleryDrawer = this.showChildFishGalleryDrawer.bind(this);
   	this.onCloseChildFishGalleryDrawer = this.onCloseChildFishGalleryDrawer.bind(this);
-    this.init = this.init.bind(this);
-    this.mouseDown = this.mouseDown.bind(this);
-    this.mouseUp = this.mouseUp.bind(this);
-    this.mouseMove = this.mouseMove.bind(this);
+
+    // predict-one results
+		this.showParentPredictOneResultsDrawer = this.showParentPredictOneResultsDrawer.bind(this);
+		this.onCloseParentPredictOneDrawer = this.onCloseParentPredictOneDrawer.bind(this);
+ 	 	this.showChildPredictOneDrawer = this.showChildPredictOneDrawer.bind(this);
+  	this.onCloseChildPredictOneDrawer = this.onCloseChildPredictOneDrawer.bind(this);
   
 		this.state = {
 			streamId: this.props.match.params.id,
@@ -59,13 +74,25 @@ export default class Player extends Component {
         h: 0,
         w: 0
       },
+      predictOneResults: {
+        id: null,
+        top_k_classes: [],
+        top_k_scores: []
+      },
       parentFishGalleryDrawerVisible: false,
       childrenFishGalleryDrawerVisible: {
         chelmon_rostratus: false,
         acanthurus_triostegus: false,
         monodactylus_argenteus: false,
         trachinotus_mookalee: false
-      }
+      },
+      parentPredictOneDrawerVisible: false,
+      childrenPredictOneDrawerVisible: {
+        chelmon_rostratus: false,
+        acanthurus_triostegus: false,
+        monodactylus_argenteus: false,
+        trachinotus_mookalee: false
+      },
 		};
   }
 
@@ -124,9 +151,24 @@ export default class Player extends Component {
     this.canvas.addEventListener('mousedown', this.mouseDown, false);
     this.canvas.addEventListener('mouseup', this.mouseUp, false);
     this.canvas.addEventListener('mousemove', this.mouseMove, false);
+
+    const predictOneBtn = document.getElementById('predictOne');
+    predictOneBtn.disabled = true;
+    
+    const predictOneResultsBtn = document.getElementById('predictOneResults');
+    predictOneResultsBtn.disabled = true;
   }
 
   mouseDown(e) {
+    // auto pause when drawing 
+    socket.off('image');
+
+    const playBtn = document.getElementById('play');
+    playBtn.disabled = false;
+
+    const pauseBtn = document.getElementById('pause');
+    pauseBtn.disabled = true;
+
     this.setState({
       rect: {
         x: e.offsetX, 
@@ -159,6 +201,8 @@ export default class Player extends Component {
 
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
       this.draw();
+		  const predictOneBtn = document.getElementById('predictOne');
+      predictOneBtn.disabled = false;
     };
   }
 
@@ -174,6 +218,14 @@ export default class Player extends Component {
 				const imageElm = document.getElementById('streamImage');
 				imageElm.src = `data:image/jpeg;base64,${image}`;
 			});
+      
+      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    
+      const playBtn = document.getElementById('play');
+      playBtn.disabled = true;
+
+      const pauseBtn = document.getElementById('pause');
+      pauseBtn.disabled = false;
     } catch (error) {
       console.log('play:error');
       console.log(error);
@@ -183,6 +235,12 @@ export default class Player extends Component {
   pause() {
     try {
       socket.off('image');
+    
+      const playBtn = document.getElementById('play');
+      playBtn.disabled = false;
+
+      const pauseBtn = document.getElementById('pause');
+      pauseBtn.disabled = true;
     } catch (error) {
       console.log('pause:error');
       console.log(error);
@@ -190,7 +248,7 @@ export default class Player extends Component {
   }
   
   async predict() {
-    console.log('predict/one');
+    const K = parseInt(document.getElementById('sliderK').value);
     const imageElm = document.getElementById('streamImage');
     const jsonData = {
       image: {
@@ -198,9 +256,10 @@ export default class Player extends Component {
         height: 756,
         width: 1344,
         depth: 3,
-        K: 1,
+        K: K,
         data: imageElm.src
-      }
+      },
+      rect: this.state.rect
     }
     const config = {
       method: 'POST',
@@ -208,20 +267,25 @@ export default class Player extends Component {
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json'
-      //  'Access-Control-Allow-Origin': '*',
-      //  'Access-Control-Allow-Headers': 'Access-Control-Allow-Origin, Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers,Authorization',
-      //  'Access-Control-Allow-Methods': 'GET,HEAD,OPTIONS,POST,PUT',
-      //  'Access-Control-Allow-Credentials': 'true'
       }
     };
-    console.log(config);
+
+    console.log('jsonData:');
+    console.log(jsonData);
 
     try {
       const response = await fetch('http://localhost:4000/predict/one', config);
       const data = await response.json();
+      console.log('response:');
       console.log(data);
+
+      this.setState({
+        predictOneResults: data
+      });
+      
+      const predictOneResultsBtn = document.getElementById('predictOneResults');
+      predictOneResultsBtn.disabled = false;
     } catch (error) {
-      console.log('predict/one:error');
       console.log(error);
     }
   }
@@ -245,6 +309,12 @@ export default class Player extends Component {
   undo() {
     try {
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+		  const predictOneBtn = document.getElementById('predictOne');
+      predictOneBtn.disabled = true;
+		  
+      const predictOneResultsBtn = document.getElementById('predictOneResults');
+      predictOneResultsBtn.disabled = true;
     } catch (error) {
       console.log('undo:error');
       console.log(error);
@@ -252,17 +322,21 @@ export default class Player extends Component {
   }
 
   handleThreshold(e) {
-		console.log(e.target.value);
     this.setState({
       threshold: parseFloat(e.target.value).toFixed(2)
     });
+    
+    const predictOneResultsBtn = document.getElementById('predictOneResults');
+    predictOneResultsBtn.disabled = true;
   }
   
 	handleK(e) {
-		console.log(e.target.value);
     this.setState({
       K: parseFloat(e.target.value)
     });
+    
+    const predictOneResultsBtn = document.getElementById('predictOneResults');
+    predictOneResultsBtn.disabled = true;
   }
 
   renderThresholdTooltip = (props) => (
@@ -289,15 +363,27 @@ export default class Player extends Component {
     </Tooltip>
   );
   
-  renderPredictTooltip = (props) => (
+  renderPredictOneTooltip = (props) => (
     <Tooltip id="predict-tooltip" {...props}>
       Ask the AI what fish is in current selection
+    </Tooltip>
+  );
+  
+  renderPredictOneResultsTooltip = (props) => (
+    <Tooltip id="predict-one-tooltip" {...props}>
+      Show predict-one results 
     </Tooltip>
   );
   
   renderUndoTooltip = (props) => (
     <Tooltip id="undo-tooltip" {...props}>
       Remove selection
+    </Tooltip>
+  );
+  
+  renderFishGalleryTooltip = (props) => (
+    <Tooltip id="fish-gallery-tooltip" {...props}>
+      View gallery of fish species in this exhibit
     </Tooltip>
   );
 
@@ -330,6 +416,129 @@ export default class Player extends Component {
       childrenFishGalleryDrawerVisible: visibleState
     });
   };
+  
+  showParentPredictOneResultsDrawer() {
+    this.setState({
+      parentPredictOneDrawerVisible: true
+    });
+  };
+  
+  onCloseParentPredictOneDrawer() {
+    this.setState({
+      parentPredictOneDrawerVisible: false
+    });
+  };
+
+  showChildPredictOneDrawer(id) {
+    var visibleState = this.state.childrenPredictOneDrawerVisible;
+    visibleState[id] = true;
+
+    this.setState({
+      childrenPredictOneDrawerVisible: visibleState
+    });
+  };
+  
+  onCloseChildPredictOneDrawer(id) {
+    var visibleState = this.state.childrenPredictOneDrawerVisible;
+    visibleState[id] = false;
+
+    this.setState({
+      childrenPredictOneDrawerVisible: visibleState
+    });
+  };
+  
+  renderPredictOneChildrenDrawers = (gallery_info) => (
+    /* display predict-one results */
+    this.state.predictOneResults.top_k_classes.map((r_key, r_idx) => {
+      let first = false
+      let foundFirst = false
+
+      return (
+        /* search through database to find matching entrie(s) with scores above threshold */
+        Object.keys(gallery_info).map((key, idx) => {
+          let fish = gallery_info[key]
+
+          if (fish.common_group_name === r_key && this.state.predictOneResults.top_k_scores[r_idx] > this.state.threshold) {
+            if (foundFirst === true) {
+              first = false
+            } else {
+              first = true
+              foundFirst = true
+            }
+
+            /* NOTE: there are several 'child' elements returned in lists and React requires these elements to possess unique 
+             * 'key' attributes.  So, we do our best to provide unique 'key' attributes without collision. */
+            return (
+              <React.Fragment key={r_idx*idx}>
+                {/* this trick works because in Javascript, 'true && expression' evaluates to 'expression' and 'false && expression' evaluates to 'false': https://reactjs.org/docs/conditional-rendering.html */} 
+                {first === true &&
+                  <React.Fragment key={2*r_idx*idx}>
+                    <h1>{Fmt.capFirstLetter(r_key)}</h1>
+                    <h2>Match: {Fmt.num(this.state.predictOneResults.top_k_scores[r_idx], {precision: 2, suffix: '%', multiplier: 1e2})}</h2>
+                    <div className="divider"></div>
+                  </React.Fragment>
+                }
+                <h3>{fish.common_name}</h3>
+                <Image src={fish.thumbnail.url} fluid rounded/>
+                <p className="photo-credit">
+                  Photo credit: <a href={fish.thumbnail.credit.owner.url}>{fish.thumbnail.credit.owner.name}</a>,&nbsp;  
+                  <a href={fish.thumbnail.credit.license.url}>{fish.thumbnail.credit.license.name}</a> via Wikimedia Commons
+                </p>
+                <Button variant="primary" onClick={() => this.showChildPredictOneDrawer(fish.scientific_name)}>
+                  Learn more 
+                  <FontAwesomeIcon icon={faAngleRight} />
+                </Button>
+                <Drawer
+                  title={fish.common_name}
+                  width={320}
+                  closable={false}
+                  onClose={() => this.onCloseChildPredictOneDrawer(fish.scientific_name)}
+                  visible={this.state.childrenPredictOneDrawerVisible[fish.scientific_name]}
+                >
+                  <Image src={fish.thumbnail.url} fluid rounded/>
+                  <p className="photo-credit">
+                    Photo credit: <a href={fish.thumbnail.credit.owner.url}>{fish.thumbnail.credit.owner.name}</a>,&nbsp;  
+                    <a href={fish.thumbnail.credit.license.url}>{fish.thumbnail.credit.license.name}</a> via Wikimedia Commons
+                  </p>
+                  <p className="detail">
+                    <span className="header">Species: </span>
+                    {fish.scientific_name}
+                  </p>
+                  <p className="detail">
+                    <span className="header">Status: </span>
+                    {fish.status}
+                  </p>
+                  <p className="detail">
+                    <span className="header">Diet: </span>
+                    {fish.diet}
+                  </p>
+                  <p className="detail">
+                    <span className="header">Reproduction: </span>
+                    {fish.reproduction}
+                  </p>
+                  <p className="detail header">Learn more</p>
+                  <Nav className="flex-column">
+                    {
+                      fish.info_urls.map((info, idy) => (
+                        <Nav.Link href={info.url} target="_blank" key={r_idx+idx+idy}>
+                          {idy}. {info.name}
+                          <FontAwesomeIcon icon={faExternalLinkAlt} />
+                        </Nav.Link>
+                      ))
+                    }
+                  </Nav> 
+                </Drawer>
+              </React.Fragment>
+            )
+          } else {
+            /* We have to make a return statement for every case in a .map() call.
+             * TODO: We could avoid this by directly using a mapping dict of common_group_names to keys in the database */
+            return (<React.Fragment key={-1*(r_idx+idx+1)}></React.Fragment>) 
+          }
+        })
+      )  
+    })
+  );
 
   renderFishGalleryChildrenDrawers = (gallery_info) => (
     Object.keys(gallery_info).map((key, idx) => {
@@ -416,7 +625,7 @@ export default class Player extends Component {
                       delay={{ show: 250, hide: 400 }}
                       overlay={this.renderPlayTooltip}
                     >
-                      <Button onClick={this.play}>
+                      <Button id="play" onClick={this.play}>
                         Play
                         <FontAwesomeIcon icon={faPlay} />
                       </Button>
@@ -427,7 +636,7 @@ export default class Player extends Component {
                       delay={{ show: 250, hide: 400 }}
                       overlay={this.renderPauseTooltip}
                     >
-                      <Button onClick={this.pause}>
+                      <Button id="pause" onClick={this.pause}>
                         Pause
                         <FontAwesomeIcon icon={faPause} />
                       </Button>
@@ -436,10 +645,32 @@ export default class Player extends Component {
                     <OverlayTrigger
                       placement="bottom"
                       delay={{ show: 250, hide: 400 }}
-                      overlay={this.renderPredictTooltip}
+                      overlay={this.renderUndoTooltip}
                     >
-                      <Button onClick={this.predict}>
-                        Predict
+                      <Button id="undo" onClick={this.undo}>
+                        Undo
+                        <FontAwesomeIcon icon={faUndo} />
+                      </Button>
+                    </OverlayTrigger>
+                    
+                    <OverlayTrigger
+                      placement="bottom"
+                      delay={{ show: 250, hide: 400 }}
+                      overlay={this.renderFishGalleryTooltip}
+                    >
+                      <Button onClick={this.showParentFishGalleryDrawer}>
+                        In this exhibit	
+                        <FontAwesomeIcon icon={faFish} />
+                      </Button>
+                    </OverlayTrigger>
+                    
+                    <OverlayTrigger
+                      placement="bottom"
+                      delay={{ show: 250, hide: 400 }}
+                      overlay={this.renderPredictOneTooltip}
+                    >
+                      <Button id="predictOne" onClick={this.predict}>
+                        Predict-One
                         <FontAwesomeIcon icon={faBrain} />
                       </Button>
                     </OverlayTrigger>
@@ -447,22 +678,11 @@ export default class Player extends Component {
                     <OverlayTrigger
                       placement="bottom"
                       delay={{ show: 250, hide: 400 }}
-                      overlay={this.renderUndoTooltip}
+                      overlay={this.renderPredictOneResultsTooltip}
                     >
-                      <Button onClick={this.undo}>
-                        Undo
-                        <FontAwesomeIcon icon={faUndo} />
-                      </Button>
-                    </OverlayTrigger>
-                  
-                    <OverlayTrigger
-                      placement="bottom"
-                      delay={{ show: 250, hide: 400 }}
-                      overlay={this.renderKTooltip}
-                    >
-                      <Button variant="primary" onClick={this.showParentFishGalleryDrawer}>
-                        In this exhibit	
-                        <FontAwesomeIcon icon={faFish} />
+                      <Button id="predictOneResults" onClick={this.showParentPredictOneResultsDrawer}>
+                        Predict-One Results	
+                        <FontAwesomeIcon icon={faPoll} />
                       </Button>
                     </OverlayTrigger>
                   </ButtonGroup>
@@ -509,6 +729,16 @@ export default class Player extends Component {
 									visible={this.state.parentFishGalleryDrawerVisible}
 								>
                   {this.renderFishGalleryChildrenDrawers(ReefLagoonDatabase)}
+								</Drawer>
+								
+                <Drawer
+									title="Predict-One Results"
+									width={520}
+									closable={false}
+									onClose={this.onCloseParentPredictOneDrawer}
+									visible={this.state.parentPredictOneDrawerVisible}
+								>
+                  {this.renderPredictOneChildrenDrawers(ReefLagoonDatabase)}
 								</Drawer>
 
               </Col>
