@@ -25,6 +25,7 @@ const height = 1080;
 const width = 1920;
 const FPS = 30;
 const youtube_url = "https://www.youtube.com/watch?v=1nWGig6pQ7Q&feature=emb_title&ab_channel=CaliforniaAcademyofSciences";
+const frame_reduction_factor = 0.7 // factor by which frame is reduced from 1920x1080 on FE
 
 /* Extract the HLS link for the youtube livestream so that we can intercept it.
 	We need to extract this automatically since the hls link will expire after few hours. */
@@ -95,21 +96,43 @@ app.get('/stream/:id/poster', function(req, res) {
 app.post('/predict/one', async function(req, res) {
   try {
     // resize image to original size and convert base64 encoded string data to Mat for use with opencv: https://github.com/justadudewhohacks/opencv4nodejs
-    base64data = req.body.image.data.replace('data:image/jpeg;base64','');
-    imgBuffer = Buffer.from(base64data, 'base64');
-    cvImage = cv.imdecode(imgBuffer);
-		cvImage = cvImage.resize(1080, 1920); // resize to original frame size (front-end alters size to fit page)
-		const imgEnc = cv.imencode('.jpg', frame).toString('base64'); // base64 encode to transmit over network
+    base64_data = req.body.frame.data.replace('data:image/jpeg;base64','');
+    frame_buffer = Buffer.from(base64_data, 'base64');
+    cv_frame = cv.imdecode(frame_buffer);
+		cv_frame = cv_frame.resize(1080, 1920); // resize to original frame size (front-end alters size to fit page)
+  
+    // scale coordinates of selection to match original 1920x1080 frame instead of downsized frame in FE
+    // round to nearest integer
+    rect_coords_adjusted = {
+      x: Math.round(req.body.rect.x * (1 / frame_reduction_factor)),
+      y: Math.round(req.body.rect.y * (1 / frame_reduction_factor)),
+      h: Math.round(req.body.rect.h * (1 / frame_reduction_factor)),
+      w: Math.round(req.body.rect.w * (1 / frame_reduction_factor))
+    };
 
+    x1 = rect_coords_adjusted.x; 
+    y1 = rect_coords_adjusted.y;
+    x2 = rect_coords_adjusted.x + rect_coords_adjusted.w;
+    y2 = rect_coords_adjusted.y + rect_coords_adjusted.h;
+
+    // grab selection based on rect from frame
+    selection_img = cv_frame.getRegion(new cv.Rect(x1, y1, rect_coords_adjusted.w, rect_coords_adjusted.h));
+    
+    // base64 encode to transmit over network
+		const selection_enc = cv.imencode('.jpg', selection_img).toString('base64'); 
+
+    // send request to model api
     const json_payload = {
-      K: req.body.image.K, 
-      id: req.body.image.id, 
-      height: 1080, 
-      width: 1920, 
-      depth: req.body.image.depth,
-      image: imgEnc 
+      K: req.body.frame.K, 
+      id: req.body.frame.id, 
+      height: rect_coords_adjusted.h, 
+      width: rect_coords_adjusted.w, 
+      depth: req.body.frame.depth,
+      image: selection_enc 
     };
     const model_response = await axios.post('http://localhost:8000/eval', json_payload);
+
+    // return model api response
     res.json(model_response.data);
   } catch (error) {
     console.error(error);

@@ -251,7 +251,7 @@ export default class Player extends Component {
     const K = parseInt(document.getElementById('sliderK').value);
     const imageElm = document.getElementById('streamImage');
     const jsonData = {
-      image: {
+      frame: {
         id: 0,
         height: 756,
         width: 1344,
