@@ -93,15 +93,16 @@ export default class Player extends Component {
         monodactylus_argenteus: false,
         trachinotus_mookalee: false
       },
+      numClasses: 1
 		};
   }
 
   async componentDidMount() {
     // connect to the broadcasting port for the stream
 		try {
-			const res = await fetch(`http://localhost:4000/stream/${this.state.streamId}/data`);
-			const data = await res.json();
-			this.setState({ streamData: data });
+			const stream_data_res = await fetch(`http://localhost:4000/stream/${this.state.streamId}/data`);
+			const stream_data = await stream_data_res.json();
+			this.setState({ streamData: stream_data });
 
 			//const imageDecoded = new Image();
 			//const canvasElm = document.getElementById('canvasImg');
@@ -121,6 +122,16 @@ export default class Player extends Component {
 				
 				//imageDecoded.src = `data:image/jpeg;base64,${image}`;
 			});
+			
+      const num_classes_req_settings = {
+        method: 'GET'
+      };
+      const num_classes_res = await fetch('http://localhost:4000/predict/num-classes', num_classes_req_settings);
+      const num_classes_data = await num_classes_res.json(); 
+      this.setState({ 
+        numClasses: num_classes_data.num_classes,
+        K: num_classes_data.num_classes
+      }); 
 		} catch (error) {
 			console.log('componentDidMount:error');
 			console.log(error);
@@ -248,7 +259,6 @@ export default class Player extends Component {
   }
   
   async predict() {
-    const K = parseInt(document.getElementById('sliderK').value);
     const imageElm = document.getElementById('streamImage');
     const jsonData = {
       frame: {
@@ -256,7 +266,7 @@ export default class Player extends Component {
         height: 756,
         width: 1344,
         depth: 3,
-        K: K,
+        K: this.state.numClasses,
         data: imageElm.src
       },
       rect: this.state.rect
@@ -270,14 +280,9 @@ export default class Player extends Component {
       }
     };
 
-    console.log('jsonData:');
-    console.log(jsonData);
-
     try {
       const response = await fetch('http://localhost:4000/predict/one', config);
       const data = await response.json();
-      console.log('response:');
-      console.log(data);
 
       this.setState({
         predictOneResults: data
@@ -325,18 +330,12 @@ export default class Player extends Component {
     this.setState({
       threshold: parseFloat(e.target.value).toFixed(2)
     });
-    
-    const predictOneResultsBtn = document.getElementById('predictOneResults');
-    predictOneResultsBtn.disabled = true;
   }
   
 	handleK(e) {
     this.setState({
       K: parseFloat(e.target.value)
     });
-    
-    const predictOneResultsBtn = document.getElementById('predictOneResults');
-    predictOneResultsBtn.disabled = true;
   }
 
   renderThresholdTooltip = (props) => (
@@ -458,7 +457,7 @@ export default class Player extends Component {
         Object.keys(gallery_info).map((key, idx) => {
           let fish = gallery_info[key]
 
-          if (fish.common_group_name === r_key && this.state.predictOneResults.top_k_scores[r_idx] > this.state.threshold) {
+          if (fish.common_group_name === r_key && this.state.predictOneResults.top_k_scores[r_idx] > this.state.threshold && (r_idx+1) <= this.state.K) {
             if (foundFirst === true) {
               first = false
             } else {

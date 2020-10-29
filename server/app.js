@@ -92,6 +92,16 @@ app.get('/stream/:id/poster', function(req, res) {
   res.send(`data:image/jpeg;base64,${frameEnc}`);
 });
 
+// GET, /predict/num-classes 
+app.get('/predict/num-classes', async function(req, res) {
+  try {
+    const response = await axios.get('http://localhost:8000/num_classes');
+    res.json(response.data);
+  } catch (error) {
+    console.error(error);
+  }
+});
+
 // POST, predict/one
 app.post('/predict/one', async function(req, res) {
   try {
