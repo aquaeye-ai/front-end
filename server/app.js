@@ -25,7 +25,6 @@ const height = 1080;
 const width = 1920;
 const FPS = 30;
 const youtube_url = "https://www.youtube.com/watch?v=1nWGig6pQ7Q&feature=emb_title&ab_channel=CaliforniaAcademyofSciences";
-const frame_reduction_factor = 0.7 // factor by which frame is reduced from 1920x1080 on FE
 
 /* Extract the HLS link for the youtube livestream so that we can intercept it.
 	We need to extract this automatically since the hls link will expire after few hours. */
@@ -113,6 +112,7 @@ app.post('/predict/one', async function(req, res) {
   
     // scale coordinates of selection to match original 1920x1080 frame instead of downsized frame in FE
     // round to nearest integer
+    const frame_reduction_factor = req.body.frame.height / 1080;
     rect_coords_adjusted = {
       x: Math.round(req.body.rect.x * (1 / frame_reduction_factor)),
       y: Math.round(req.body.rect.y * (1 / frame_reduction_factor)),
