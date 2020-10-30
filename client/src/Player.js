@@ -262,7 +262,7 @@ export default class Player extends Component {
     const imageElm = document.getElementById('streamImage');
     const jsonData = {
       frame: {
-        id: 0,
+        id: new Date().getTime(),
         height: 756,
         width: 1344,
         depth: 3,
