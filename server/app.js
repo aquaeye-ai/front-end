@@ -120,13 +120,19 @@ app.post('/predict/one', async function(req, res) {
       w: Math.round(req.body.rect.w * (1 / frame_reduction_factor))
     };
 
-    x1 = rect_coords_adjusted.x; 
-    y1 = rect_coords_adjusted.y;
-    x2 = rect_coords_adjusted.x + rect_coords_adjusted.w;
-    y2 = rect_coords_adjusted.y + rect_coords_adjusted.h;
+    // Need to switch start and end coordinates of rect in case the h or w is negative.  
+    // This can happen if the rect is drawing from right-to-left instead of left-to-right.
+    if (rect_coords_adjusted.w < 0) {
+      rect_coords_adjusted.x = rect_coords_adjusted.x + rect_coords_adjusted.w;
+      rect_coords_adjusted.w = Math.abs(rect_coords_adjusted.w);
+    } 
+    if (rect_coords_adjusted.h < 0) {
+      rect_coords_adjusted.y = rect_coords_adjusted.y + rect_coords_adjusted.h;
+      rect_coords_adjusted.h = Math.abs(rect_coords_adjusted.h);
+    } 
 
     // grab selection based on rect from frame
-    selection_img = cv_frame.getRegion(new cv.Rect(x1, y1, rect_coords_adjusted.w, rect_coords_adjusted.h));
+    selection_img = cv_frame.getRegion(new cv.Rect(rect_coords_adjusted.x, rect_coords_adjusted.y, rect_coords_adjusted.w, rect_coords_adjusted.h));
     
     // base64 encode to transmit over network
 		const selection_enc = cv.imencode('.jpg', selection_img).toString('base64'); 
