@@ -468,10 +468,10 @@ export default class Player extends Component {
             /* NOTE: there are several 'child' elements returned in lists and React requires these elements to possess unique 
              * 'key' attributes.  So, we do our best to provide unique 'key' attributes without collision. */
             return (
-              <React.Fragment key={r_idx*idx}>
+              <React.Fragment key={this.hashStr(`predict-one-results-parent-${fish.scientific_name}-not-empty`)}>
                 {/* this trick works because in Javascript, 'true && expression' evaluates to 'expression' and 'false && expression' evaluates to 'false': https://reactjs.org/docs/conditional-rendering.html */} 
                 {first === true &&
-                  <React.Fragment key={2*r_idx*idx}>
+                  <React.Fragment key={this.hashStr(`predict-one-results-parent-header-${fish.scientific_name}`)}>
                     <h1>{Fmt.capFirstLetter(r_key)}</h1>
                     <h2>Match: {Fmt.num(this.state.predictOneResults.top_k_scores[r_idx], {precision: 2, suffix: '%', multiplier: 1e2})}</h2>
                     <div className="divider"></div>
@@ -519,7 +519,7 @@ export default class Player extends Component {
                   <Nav className="flex-column">
                     {
                       fish.info_urls.map((info, idy) => (
-                        <Nav.Link href={info.url} target="_blank" key={r_idx+idx+idy}>
+                        <Nav.Link href={info.url} target="_blank" key={this.hashStr(`predict-one-results-child-${idy}-${fish.scientific_name}-${r_idx}-${idx}-${idy}`)}>
                           {idy}. {info.name}
                           <FontAwesomeIcon icon={faExternalLinkAlt} />
                         </Nav.Link>
@@ -532,7 +532,7 @@ export default class Player extends Component {
           } else {
             /* We have to make a return statement for every case in a .map() call.
              * TODO: We could avoid this by directly using a mapping dict of common_group_names to keys in the database */
-            return (<React.Fragment key={-1*(r_idx+idx+1)}></React.Fragment>) 
+            return (<React.Fragment key={this.hashStr(`predict-one-results-parent-${fish.scientific_name}-empty`)}></React.Fragment>) 
           }
         })
       )  
@@ -543,8 +543,10 @@ export default class Player extends Component {
     Object.keys(gallery_info).map((key, idx) => {
       let fish = gallery_info[key]
 
+			/* NOTE: there are several 'child' elements returned in lists and React requires these elements to possess unique 
+			 * 'key' attributes.  So, we do our best to provide unique 'key' attributes without collision. */
       return (
-        <React.Fragment key={idx}>
+        <React.Fragment key={this.hashStr(`fish-gallery-parent-${idx}-${fish.scientific_name}`)}>
           <h1>{fish.common_name}</h1>
           <Image src={fish.thumbnail.url} fluid rounded/>
           <p className="photo-credit">
@@ -587,7 +589,7 @@ export default class Player extends Component {
             <Nav className="flex-column">
               {
                 fish.info_urls.map((info, idy) => (
-                  <Nav.Link href={info.url} target="_blank" key={idx+idy}>
+                  <Nav.Link href={info.url} target="_blank" key={this.hashStr(`fish-gallery-child-url-${idx}-${idy}-${fish.scientific_name}`)}>
                     {idy}. {info.name}
                     <FontAwesomeIcon icon={faExternalLinkAlt} />
                   </Nav.Link>
@@ -599,6 +601,22 @@ export default class Player extends Component {
       )
     })
   );
+
+	// hash function for strings: https://stackoverflow.com/questions/7616461/generate-a-hash-from-string-in-javascript
+	hashStr(message) {
+		var hash = 0, i, chr;
+    for (i = 0; i < message.length; i++) {
+      chr   = message.charCodeAt(i);
+      hash  = ((hash << 5) - hash) + chr;
+      hash |= 0; // Convert to 32bit integer
+    }
+    return hash;
+	}
+
+	getTimestamp() {
+		const timestamp = new Date().getTime();
+		return timestamp;
+	}
 
 	render() {
 		return (
