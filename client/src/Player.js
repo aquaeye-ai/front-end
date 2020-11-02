@@ -291,7 +291,8 @@ export default class Player extends Component {
       const data = await response.json();
 
       this.setState({
-        predictOneResults: data
+        predictOneResults: data,
+        parentPredictOneDrawerVisible: true
       });
       
       const predictOneResultsBtn = document.getElementById('predictOneResults');
