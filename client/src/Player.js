@@ -67,7 +67,7 @@ export default class Player extends Component {
 		this.state = {
 			streamId: this.props.match.params.id,
 			streamData: {},
-			threshold: 0.50,
+			threshold: 0.80,
       K: 1,
       drag: false,
       rect: {
@@ -133,7 +133,6 @@ export default class Player extends Component {
       const num_classes_data = await num_classes_res.json(); 
       this.setState({ 
         numClasses: num_classes_data.num_classes,
-        K: num_classes_data.num_classes
       }); 
 		} catch (error) {
 			console.log('componentDidMount:error');
@@ -165,6 +164,10 @@ export default class Player extends Component {
     this.canvas.addEventListener('mousedown', this.mouseDown, false);
     this.canvas.addEventListener('mouseup', this.mouseUp, false);
     this.canvas.addEventListener('mousemove', this.mouseMove, false);
+    
+    const playBtn = document.getElementById('play');
+    playBtn.disabled = true;
+		playBtn.classList.add("disabled");
 
     const predictOneBtn = document.getElementById('predictOne');
     predictOneBtn.disabled = true;
