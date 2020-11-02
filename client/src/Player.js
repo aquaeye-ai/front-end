@@ -174,7 +174,6 @@ export default class Player extends Component {
 
   mouseDown(e) {
     // auto pause when drawing 
-    //socket.off('image');
 		this.pause();
 
     const playBtn = document.getElementById('play');
