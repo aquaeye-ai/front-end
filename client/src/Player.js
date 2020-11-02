@@ -165,20 +165,21 @@ export default class Player extends Component {
 
     const predictOneBtn = document.getElementById('predictOne');
     predictOneBtn.disabled = true;
+		predictOneBtn.classList.add("disabled");
     
     const predictOneResultsBtn = document.getElementById('predictOneResults');
     predictOneResultsBtn.disabled = true;
+		predictOneResultsBtn.classList.add("disabled");
   }
 
   mouseDown(e) {
     // auto pause when drawing 
-    socket.off('image');
+    //socket.off('image');
+		this.pause();
 
     const playBtn = document.getElementById('play');
     playBtn.disabled = false;
-
-    const pauseBtn = document.getElementById('pause');
-    pauseBtn.disabled = true;
+		playBtn.classList.remove("disabled");
 
     this.setState({
       rect: {
@@ -214,6 +215,7 @@ export default class Player extends Component {
       this.draw();
 		  const predictOneBtn = document.getElementById('predictOne');
       predictOneBtn.disabled = false;
+			predictOneBtn.classList.remove("disabled");
     };
   }
 
@@ -234,9 +236,7 @@ export default class Player extends Component {
     
       const playBtn = document.getElementById('play');
       playBtn.disabled = true;
-
-      const pauseBtn = document.getElementById('pause');
-      pauseBtn.disabled = false;
+			playBtn.classList.add("disabled");
     } catch (error) {
       console.log('play:error');
       console.log(error);
@@ -249,9 +249,7 @@ export default class Player extends Component {
     
       const playBtn = document.getElementById('play');
       playBtn.disabled = false;
-
-      const pauseBtn = document.getElementById('pause');
-      pauseBtn.disabled = true;
+			playBtn.classList.remove("disabled");
     } catch (error) {
       console.log('pause:error');
       console.log(error);
@@ -290,6 +288,7 @@ export default class Player extends Component {
       
       const predictOneResultsBtn = document.getElementById('predictOneResults');
       predictOneResultsBtn.disabled = false;
+			predictOneResultsBtn.classList.remove("disabled");
     } catch (error) {
       console.log(error);
     }
@@ -317,9 +316,11 @@ export default class Player extends Component {
 
 		  const predictOneBtn = document.getElementById('predictOne');
       predictOneBtn.disabled = true;
+			predictOneBtn.classList.add("disabled");
 		  
       const predictOneResultsBtn = document.getElementById('predictOneResults');
       predictOneResultsBtn.disabled = true;
+			predictOneResultsBtn.classList.add("disabled");
     } catch (error) {
       console.log('undo:error');
       console.log(error);
@@ -353,12 +354,6 @@ export default class Player extends Component {
   renderPlayTooltip = (props) => (
     <Tooltip id="threshold-tooltip" {...props}>
       Play livestream
-    </Tooltip>
-  );
-  
-  renderPauseTooltip = (props) => (
-    <Tooltip id="threshold-tooltip" {...props}>
-      Pause livestream
     </Tooltip>
   );
   
@@ -648,17 +643,6 @@ export default class Player extends Component {
                       </Button>
                     </OverlayTrigger>
 
-                    <OverlayTrigger
-                      placement="bottom"
-                      delay={{ show: 250, hide: 400 }}
-                      overlay={this.renderPauseTooltip}
-                    >
-                      <Button id="pause" onClick={this.pause}>
-                        Pause
-                        <FontAwesomeIcon icon={faPause} />
-                      </Button>
-                    </OverlayTrigger>
-                    
                     <OverlayTrigger
                       placement="bottom"
                       delay={{ show: 250, hide: 400 }}

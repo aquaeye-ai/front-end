@@ -77,6 +77,10 @@
                   &:hover {
                     color: $aquamarine;
                   }
+
+                  &.disabled {
+                    color: $home-icon;
+                  }
                 }
 
                 svg {
