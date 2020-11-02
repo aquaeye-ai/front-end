@@ -367,7 +367,7 @@ export default class Player extends Component {
 
   renderHideShowResultsFiltersTooltip = (props) => (
     <Tooltip id="hide-show-results-filters-tooltip" {...props}>
-      {this.state.showResultsFilters ? `Hide results filters` : `Show controls that filter predict-one results output`}
+      {this.state.showResultsFilters ? `Hide predict-one results filters` : `Show controls that filter predict-one results output`}
     </Tooltip>
   );
 
