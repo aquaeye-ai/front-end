@@ -45,7 +45,7 @@ export default class Player extends Component {
     this.handleK = this.handleK.bind(this);
     this.predict = this.predict.bind(this);
     this.handleThreshold = this.handleThreshold.bind(this);
-    this.hideShowResultsFilters = this.hideShowResultsFilters.bind(this);
+    this.hideShowPredictOneResultsFilters = this.hideShowPredictOneResultsFilters.bind(this);
 
     // mouse events
     this.mouseDown = this.mouseDown.bind(this);
@@ -96,7 +96,7 @@ export default class Player extends Component {
         trachinotus_mookalee: false
       },
       numClasses: 1,
-      showResultsFilters: false
+      showPredictOneResultsFilters: false
 		};
   }
 
@@ -177,8 +177,8 @@ export default class Player extends Component {
     predictOneResultsBtn.disabled = true;
 		predictOneResultsBtn.classList.add("disabled");
     
-    const resultsFilters = document.getElementById('resultsFilters');
-    resultsFilters.style.visibility = 'hidden';
+    const predictOneResultsFilters = document.getElementById('predictOneResultsFilters');
+    predictOneResultsFilters.style.visibility = 'hidden';
   }
 
   mouseDown(e) {
@@ -336,20 +336,20 @@ export default class Player extends Component {
     }
   }
 
-  hideShowResultsFilters() {
-    const resultsFilters = document.getElementById('resultsFilters');
+  hideShowPredictOneResultsFilters() {
+    const predictOneResultsFilters = document.getElementById('predictOneResultsFilters');
 
-    if (this.state.showResultsFilters === true) {
-      resultsFilters.style.visibility = 'hidden';
+    if (this.state.showPredictOneResultsFilters === true) {
+      predictOneResultsFilters.style.visibility = 'hidden';
       
       this.setState({
-        showResultsFilters: false
+        showPredictOneResultsFilters: false
       });
     } else {
-      resultsFilters.style.visibility = 'visible';
+      predictOneResultsFilters.style.visibility = 'visible';
       
       this.setState({
-        showResultsFilters: true
+        showPredictOneResultsFilters: true
       });
     }
   }
@@ -366,9 +366,9 @@ export default class Player extends Component {
     });
   }
 
-  renderHideShowResultsFiltersTooltip = (props) => (
+  renderHideShowPredictOneResultsFiltersTooltip = (props) => (
     <Tooltip id="hide-show-results-filters-tooltip" {...props}>
-      {this.state.showResultsFilters ? `Hide predict-one results filters` : `Show controls that filter predict-one results output`}
+      {this.state.showPredictOneResultsFilters ? `Hide predict-one results filters` : `Show controls that filter predict-one results output`}
     </Tooltip>
   );
 
@@ -404,7 +404,7 @@ export default class Player extends Component {
   
   renderUndoTooltip = (props) => (
     <Tooltip id="undo-tooltip" {...props}>
-      Remove selection
+      Remove selection and invalidate predict-one results
     </Tooltip>
   );
   
@@ -733,17 +733,19 @@ export default class Player extends Component {
                     <OverlayTrigger
                       placement="bottom"
                       delay={{ show: 250, hide: 400 }}
-                      overlay={this.renderHideShowResultsFiltersTooltip}
+                      overlay={this.renderHideShowPredictOneResultsFiltersTooltip}
                     >
                       <div className="btn-container">
-                        <Button id="hideShowResultsFilters" onClick={this.hideShowResultsFilters}>
-                          {this.state.showResultsFilters ? `Hide Results Filters` : `Show Results Filters`}
+                        <Button id="hideShowPredictOneResultsFilters" onClick={this.hideShowPredictOneResultsFilters}>
+                          {this.state.showPredictOneResultsFilters ? `Hide Results Filters` : `Show Results Filters`}
                           <FontAwesomeIcon icon={faFilter} />
                         </Button>
                       </div>
                     </OverlayTrigger>
                     
-                    <div id="resultsFilters">
+                    <div id="predictOneResultsFilters" className="results-filters">
+                      <h1>Predict-One Results Filters</h1>
+
                       <div className="slider-control">
                         <OverlayTrigger
                           placement="bottom"

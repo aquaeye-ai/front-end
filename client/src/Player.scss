@@ -51,18 +51,30 @@
             justify-content: center; 
           }
 
-          .slider-control {
-            padding: 10px 0;
-            p, input {
-              width: 100%;
-            }
-            p {
-              margin-bottom: 0;
-              margin-right: 10px;
-              color: $home-icon;
+          .results-filters {
+            margin-top: 5px;
+            border: solid 2px $yale-blue;
+            border-radius: 3px;
 
-              &:hover {
-                color: $aquamarine;
+            h1 {
+              padding: 5px;
+              font-size: 16px;
+              border-bottom: solid 2px $yale-blue;
+            }
+            
+            .slider-control {
+              padding: 10px 0;
+              p, input {
+                width: 100%;
+              }
+              p {
+                margin-bottom: 0;
+                margin-right: 10px;
+                color: $home-icon;
+
+                &:hover {
+                  color: $aquamarine;
+                }
               }
             }
           }
