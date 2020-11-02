@@ -20,7 +20,8 @@ import {
 	faFish,
   faAngleRight,
 	faExternalLinkAlt,
-  faPoll
+  faPoll,
+  faFilter
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Header from './Header';
@@ -44,6 +45,7 @@ export default class Player extends Component {
     this.handleK = this.handleK.bind(this);
     this.predict = this.predict.bind(this);
     this.handleThreshold = this.handleThreshold.bind(this);
+    this.hideShowResultsFilters = this.hideShowResultsFilters.bind(this);
 
     // mouse events
     this.mouseDown = this.mouseDown.bind(this);
@@ -93,7 +95,8 @@ export default class Player extends Component {
         monodactylus_argenteus: false,
         trachinotus_mookalee: false
       },
-      numClasses: 1
+      numClasses: 1,
+      showResultsFilters: false
 		};
   }
 
@@ -170,6 +173,9 @@ export default class Player extends Component {
     const predictOneResultsBtn = document.getElementById('predictOneResults');
     predictOneResultsBtn.disabled = true;
 		predictOneResultsBtn.classList.add("disabled");
+    
+    const resultsFilters = document.getElementById('resultsFilters');
+    resultsFilters.style.visibility = 'hidden';
   }
 
   mouseDown(e) {
@@ -326,6 +332,24 @@ export default class Player extends Component {
     }
   }
 
+  hideShowResultsFilters() {
+    const resultsFilters = document.getElementById('resultsFilters');
+
+    if (this.state.showResultsFilters === true) {
+      resultsFilters.style.visibility = 'hidden';
+      
+      this.setState({
+        showResultsFilters: false
+      });
+    } else {
+      resultsFilters.style.visibility = 'visible';
+      
+      this.setState({
+        showResultsFilters: true
+      });
+    }
+  }
+
   handleThreshold(e) {
     this.setState({
       threshold: parseFloat(e.target.value).toFixed(2)
@@ -338,15 +362,21 @@ export default class Player extends Component {
     });
   }
 
+  renderHideShowResultsFiltersTooltip = (props) => (
+    <Tooltip id="hide-show-results-filters-tooltip" {...props}>
+      {this.state.showResultsFilters ? `Hide results filters` : `Show controls that filter predict-one results output`}
+    </Tooltip>
+  );
+
   renderThresholdTooltip = (props) => (
     <Tooltip id="threshold-tooltip" {...props}>
-      Threshold that must be met before prediction from model is deemed correct
+      Threshold that must be met before a given class prediction by model is asserted correct and shown in results panel
     </Tooltip>
   );
   
   renderKTooltip = (props) => (
     <Tooltip id="k-tooltip" {...props}>
-      Number of predictions to return when predictions are sorted in descending order based on probability 
+      Number of class predictions to return and show in results panel when class predictions are sorted in descending order based on their associated model confidence 
     </Tooltip>
   );
   
@@ -695,40 +725,55 @@ export default class Player extends Component {
                         </Button>
                       </div>
                     </OverlayTrigger>
+                    
+                    <OverlayTrigger
+                      placement="bottom"
+                      delay={{ show: 250, hide: 400 }}
+                      overlay={this.renderHideShowResultsFiltersTooltip}
+                    >
+                      <div className="btn-container">
+                        <Button id="hideShowResultsFilters" onClick={this.hideShowResultsFilters}>
+                          {this.state.showResultsFilters ? `Hide Results Filters` : `Show Results Filters`}
+                          <FontAwesomeIcon icon={faFilter} />
+                        </Button>
+                      </div>
+                    </OverlayTrigger>
+                    
+                    <div id="resultsFilters">
+                      <div className="slider-control">
+                        <OverlayTrigger
+                          placement="bottom"
+                          delay={{ show: 250, hide: 400 }}
+                          overlay={this.renderThresholdTooltip}
+                        >
+                          <p>Prediction Threshold: {this.state.threshold}</p>
+                        </OverlayTrigger>
+                        <input id="sliderThreshold" type="range" value={this.state.threshold} min="0" max="1" step="any" list="steplistThreshold" onChange={this.handleThreshold} />
+                        <datalist id="steplistThreshold">
+                          <option value="0">0</option>
+                          <option value="1">1</option>
+                        </datalist>
+                      </div>
+
+                      <div className="slider-control">
+                        <OverlayTrigger
+                          placement="bottom"
+                          delay={{ show: 250, hide: 400 }}
+                          overlay={this.renderKTooltip}
+                        >
+                          <p>K: {this.state.K}</p>
+                        </OverlayTrigger>
+                        <input id="sliderK" type="range" value={this.state.K} min="1" max="5" step="1" list="steplistK" onChange={this.handleK} />
+                        <datalist id="steplistK">
+                          <option value="1">1</option>
+                          <option value="2">2</option>
+                          <option value="3">3</option>
+                          <option value="4">4</option>
+                          <option value="5">5</option>
+                        </datalist>
+                      </div>
+                    </div>
                   </ButtonGroup>
-                </div>
-
-                <div className="slider-control">
-                  <OverlayTrigger
-                    placement="bottom"
-                    delay={{ show: 250, hide: 400 }}
-                    overlay={this.renderThresholdTooltip}
-                  >
-                    <p>Prediction Threshold: {this.state.threshold}</p>
-                  </OverlayTrigger>
-                  <input id="sliderThreshold" type="range" value={this.state.threshold} min="0" max="1" step="any" list="steplistThreshold" onChange={this.handleThreshold} />
-                  <datalist id="steplistThreshold">
-                    <option value="0">0</option>
-                    <option value="1">1</option>
-                  </datalist>
-                </div>
-
-                <div className="slider-control">
-                  <OverlayTrigger
-                    placement="bottom"
-                    delay={{ show: 250, hide: 400 }}
-                    overlay={this.renderKTooltip}
-                  >
-                    <p>K: {this.state.K}</p>
-                  </OverlayTrigger>
-                  <input id="sliderK" type="range" value={this.state.K} min="1" max="5" step="1" list="steplistK" onChange={this.handleK} />
-                  <datalist id="steplistK">
-                    <option value="1">1</option>
-                    <option value="2">2</option>
-                    <option value="3">3</option>
-                    <option value="4">4</option>
-                    <option value="5">5</option>
-                  </datalist>
                 </div>
 
 								<Drawer
