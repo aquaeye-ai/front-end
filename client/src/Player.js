@@ -636,10 +636,12 @@ export default class Player extends Component {
                       delay={{ show: 250, hide: 400 }}
                       overlay={this.renderPlayTooltip}
                     >
-                      <Button id="play" onClick={this.play}>
-                        Play
-                        <FontAwesomeIcon icon={faPlay} />
-                      </Button>
+                      <div className="btn-container">
+                        <Button id="play" onClick={this.play}>
+                          Play
+                          <FontAwesomeIcon icon={faPlay} />
+                        </Button>
+                      </div>
                     </OverlayTrigger>
 
                     <OverlayTrigger
@@ -647,10 +649,12 @@ export default class Player extends Component {
                       delay={{ show: 250, hide: 400 }}
                       overlay={this.renderUndoTooltip}
                     >
-                      <Button id="undo" onClick={this.undo}>
-                        Undo
-                        <FontAwesomeIcon icon={faUndo} />
-                      </Button>
+                      <div className="btn-container">
+                        <Button id="undo" onClick={this.undo}>
+                          Undo
+                          <FontAwesomeIcon icon={faUndo} />
+                        </Button>
+                      </div>
                     </OverlayTrigger>
                     
                     <OverlayTrigger
@@ -658,10 +662,12 @@ export default class Player extends Component {
                       delay={{ show: 250, hide: 400 }}
                       overlay={this.renderFishGalleryTooltip}
                     >
-                      <Button onClick={this.showParentFishGalleryDrawer}>
-                        In this exhibit	
-                        <FontAwesomeIcon icon={faFish} />
-                      </Button>
+                      <div className="btn-container">
+                        <Button onClick={this.showParentFishGalleryDrawer}>
+                          In this exhibit	
+                          <FontAwesomeIcon icon={faFish} />
+                        </Button>
+                      </div>
                     </OverlayTrigger>
                     
                     <OverlayTrigger
@@ -669,10 +675,12 @@ export default class Player extends Component {
                       delay={{ show: 250, hide: 400 }}
                       overlay={this.renderPredictOneTooltip}
                     >
-                      <Button id="predictOne" onClick={this.predict}>
-                        Predict-One
-                        <FontAwesomeIcon icon={faBrain} />
-                      </Button>
+                      <div className="btn-container">
+                        <Button id="predictOne" onClick={this.predict}>
+                          Predict-One
+                          <FontAwesomeIcon icon={faBrain} />
+                        </Button>
+                      </div>
                     </OverlayTrigger>
                     
                     <OverlayTrigger
@@ -680,10 +688,12 @@ export default class Player extends Component {
                       delay={{ show: 250, hide: 400 }}
                       overlay={this.renderPredictOneResultsTooltip}
                     >
-                      <Button id="predictOneResults" onClick={this.showParentPredictOneResultsDrawer}>
-                        Predict-One Results	
-                        <FontAwesomeIcon icon={faPoll} />
-                      </Button>
+                      <div className="btn-container">
+                        <Button id="predictOneResults" onClick={this.showParentPredictOneResultsDrawer}>
+                          Predict-One Results	
+                          <FontAwesomeIcon icon={faPoll} />
+                        </Button>
+                      </div>
                     </OverlayTrigger>
                   </ButtonGroup>
                 </div>

@@ -70,21 +70,36 @@
           .video-controls {
             .btn-group-vertical {
               &.controls {
-                .btn {
-                  background-color: $yale-blue;
-                  color: $ocean-green;
+                .btn-container {
+                  width: 100%;
 
-                  &:hover {
-                    color: $aquamarine;
+                  .btn {
+                    background-color: $yale-blue;
+                    color: $ocean-green;
+                    width: 100%;
+                    border-radius: 0;
+
+                    &:hover {
+                      color: $aquamarine;
+                    }
+
+                    &.disabled {
+                      color: $home-icon;
+                      pointer-events: none;
+                    }
                   }
 
-                  &.disabled {
-                    color: $home-icon;
+                  &:first-child .btn {
+                    border-radius: 3px 0 0 3px;
                   }
-                }
+                  
+                  &:last-child .btn {
+                    border-radius: 0 3px 3px 0;
+                  }
 
-                svg {
-                  margin-left: 10px;
+                  svg {
+                    margin-left: 10px;
+                  }
                 }
               }
             }
