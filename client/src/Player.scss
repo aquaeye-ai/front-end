@@ -1,5 +1,92 @@
 @import './colors.scss';
 
+.modal-dialog.modal-90w {
+  //width: 90%;
+  //max-width: 90%;
+  opacity: 65%;
+
+  .modal-content {
+    background-color: $denim;
+
+    .modal-header {
+      .h4 {
+        color: $home-icon;
+      }
+
+      button.close {
+        color: $ocean-green; 
+
+        &:hover {
+          color: $aquamarine;
+        }
+      }
+    } 
+
+    .modal-footer {
+      .btn {
+        color: $ocean-green; 
+
+        &:hover {
+          color: $aquamarine;
+        }
+      }
+    }
+
+    .container-fluid {
+      .row {
+        .col-6 {
+          h4 {
+            color: $home-icon;
+          }
+        }
+
+        .col-2 {
+          div.row-header {
+            height: 50%;
+            margin-top: 25%;
+            margin-bottom: 25%;
+            color: $home-icon;
+          }
+        }
+
+        .col-4 {
+          .icon-container {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            //justify-content: center;
+
+            svg {
+              &.has-hover:hover {
+                color: $aquamarine;
+              }
+              &.space-l {
+                margin-left: 10px;
+              }
+            }
+
+            .space-l-r {
+              margin: 5px;
+              color: $home-icon;
+            }
+
+            .btn {
+              background-color: $yale-blue;
+              color: $ocean-green;
+              width: 100%;
+              border-radius: 0;
+
+              &:hover {
+                color: $aquamarine;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
 .App {
   .body {
 
@@ -45,7 +132,7 @@
         .col {
           //font-family: Poppins,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
 
-          .video-controls, .modal-button-container {
+          .video-controls {
             display: flex;
             align-items: center;
             justify-content: center; 
@@ -116,22 +203,6 @@
               }
             }
           }
-
-          .modal-button-container {
-            button {
-              background-color: $yale-blue;
-              color: $ocean-green;
-
-              &:hover {
-                color: $aquamarine;
-              }
-            }
-
-            svg {
-              margin-left: 15px;
-            }
-          }
-
         }
       }
     }

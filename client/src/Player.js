@@ -9,7 +9,8 @@ import {
   OverlayTrigger,
   Tooltip,
   Image,
-	Nav
+	Nav,
+	Modal
 } from 'react-bootstrap';
 import { Drawer } from 'antd';
 import {
@@ -21,7 +22,13 @@ import {
   faAngleRight,
 	faExternalLinkAlt,
   faPoll,
-  faFilter
+  faFilter,
+  faInfo,
+  faMouse,
+  faMousePointer,
+  faBorderStyle,
+	faArrowRight,
+	faHourglassHalf
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Header from './Header';
@@ -32,7 +39,7 @@ import Fmt from './Fmt';
 import './Player.scss';
 
 let socket = io('http://localhost:5000')
-
+	
 export default class Player extends Component {
   constructor(props) {
 		super(props);
@@ -40,6 +47,7 @@ export default class Player extends Component {
     this.init = this.init.bind(this);
 
     // menu buttons
+    this.setBasicUsageInstructionsModalShow = this.setBasicUsageInstructionsModalShow.bind(this);
     this.play = this.play.bind(this);
     this.undo = this.undo.bind(this);
     this.handleK = this.handleK.bind(this);
@@ -96,7 +104,8 @@ export default class Player extends Component {
         trachinotus_mookalee: false
       },
       numClasses: 1,
-      showPredictOneResultsFilters: false
+      showPredictOneResultsFilters: false,
+      showBasicUsageInstructionsModal: false
 		};
   }
 
@@ -233,6 +242,12 @@ export default class Player extends Component {
     this.ctx.strokeRect(this.state.rect.x, this.state.rect.y, this.state.rect.w, this.state.rect.h);
   }
   
+  setBasicUsageInstructionsModalShow(val) {
+    this.setState({
+      showBasicUsageInstructionsModal: val
+    });
+  }
+  
   play() {
     try {
 			socket.on('image', image => {
@@ -365,6 +380,12 @@ export default class Player extends Component {
       K: parseFloat(e.target.value)
     });
   }
+	
+	renderBasicUsageInstructionsTooltip = (props) => (
+    <Tooltip id="basic-usage-instructions-tooltip" {...props}>
+      Show a simple step-by-step guide to help get you started using the app
+    </Tooltip>
+	);
 
   renderHideShowPredictOneResultsFiltersTooltip = (props) => (
     <Tooltip id="hide-show-results-filters-tooltip" {...props}>
@@ -473,6 +494,22 @@ export default class Player extends Component {
       childrenPredictOneDrawerVisible: visibleState
     });
   };
+
+	// hash function for strings: https://stackoverflow.com/questions/7616461/generate-a-hash-from-string-in-javascript
+	hashStr(message) {
+		var hash = 0, i, chr;
+    for (i = 0; i < message.length; i++) {
+      chr   = message.charCodeAt(i);
+      hash  = ((hash << 5) - hash) + chr;
+      hash |= 0; // Convert to 32bit integer
+    }
+    return hash;
+	}
+
+	getTimestamp() {
+		const timestamp = new Date().getTime();
+		return timestamp;
+	}
   
   renderPredictOneChildrenDrawers = (gallery_info) => (
     /* display predict-one results */
@@ -630,22 +667,6 @@ export default class Player extends Component {
     })
   );
 
-	// hash function for strings: https://stackoverflow.com/questions/7616461/generate-a-hash-from-string-in-javascript
-	hashStr(message) {
-		var hash = 0, i, chr;
-    for (i = 0; i < message.length; i++) {
-      chr   = message.charCodeAt(i);
-      hash  = ((hash << 5) - hash) + chr;
-      hash |= 0; // Convert to 32bit integer
-    }
-    return hash;
-	}
-
-	getTimestamp() {
-		const timestamp = new Date().getTime();
-		return timestamp;
-	}
-
 	render() {
 		return (
 			<div className="App">
@@ -665,6 +686,25 @@ export default class Player extends Component {
               <Col>
                 <div className="video-controls">
                   <ButtonGroup vertical className="controls">
+                    <OverlayTrigger
+                      placement="bottom"
+                      delay={{ show: 250, hide: 400 }}
+                      overlay={this.renderBasicUsageInstructionsTooltip}
+                    >
+                      <div className="btn-container">
+                        <Button id="basicUsageInstructions" onClick={() => this.setBasicUsageInstructionsModalShow(true)}>
+                         	Quickstart
+                          <FontAwesomeIcon icon={faInfo} />
+                        </Button>
+                      </div>
+                    </OverlayTrigger>
+								
+										{/* keep modal outside of OverlayTrigger, otherwise hoving over modal will trigger overlay */}	
+										<BasicUsageInstructionsModal
+											show={this.state.showBasicUsageInstructionsModal}
+											onHide={() => this.setBasicUsageInstructionsModalShow(false)}
+										/>
+
                     <OverlayTrigger
                       placement="bottom"
                       delay={{ show: 250, hide: 400 }}
@@ -817,6 +857,197 @@ export default class Player extends Component {
         </Body>
 				<Footer />
 			</div>
+		)
+	}
+}
+
+class BasicUsageInstructionsModal extends Component {
+  constructor(props) {
+		super();
+	}
+	
+	renderMouseTooltip = (props) => (
+    <Tooltip id="mouse-tooltip" {...props}>
+   		Use mouse  
+    </Tooltip>
+	);
+	
+	renderMousePointerTooltip = (props) => (
+    <Tooltip id="mouse-pointer-tooltip" {...props}>
+   		Left click with mouse on livestream, screen will pause  
+    </Tooltip>
+	);
+	
+	renderBoundingBoxTooltip = (props) => (
+    <Tooltip id="bounding-box-tooltip" {...props}>
+   		Left-click and drag using mouse to draw bounding box over one fish of interest 
+    </Tooltip>
+	);
+	
+	renderFishTooltip = (props) => (
+    <Tooltip id="fish-tooltip" {...props}>
+   		Enclose one fish with bounding box.  NOTE: multiple fish within a bounding box will confuse the model  
+    </Tooltip>
+	);
+
+	renderPredictOneTooltip = (props) => (
+    <Tooltip id="predict-one-tooltip" {...props}>
+   		Left-click button in left menu named "Predict-One".  
+			This will send a request with your a snapshot of your bounding boxe's contents to our model for prediction.
+			NOTE: this button will only be active once a bounding-box has been drawn.
+    </Tooltip>
+	);
+	
+	renderWaitTooltip = (props) => (
+    <Tooltip id="wait-tooltip" {...props}>
+			Sit tight!  Your results are being crunched by the model
+    </Tooltip>
+	);
+
+	renderPredictOneResultsTooltip = (props) => (
+    <Tooltip id="predict-one-results-tooltip" {...props}>
+			A right-pane drawer will automatically open with your results
+    </Tooltip>
+	);
+
+	render() {
+		return (
+			<Modal
+				{...this.props}
+				size="lg"
+				aria-labelledby="contained-modal-title-vcenter"
+				centered
+				dialogClassName="modal-90w"
+			>
+				<Modal.Header closeButton>
+					<Modal.Title id="contained-modal-title-vcenter">
+						Quickstart (hover over icons for detailed info)
+					</Modal.Title>
+				</Modal.Header>
+				<Modal.Body>
+					<Container fluid>
+						<Row>
+							<Col xs={6}>
+								<h4>Predict-One</h4>
+							</Col>
+						</Row>
+						<Row>
+							<Col xs={2}>
+								<div className="row-header">
+									Step 1
+								</div>
+							</Col>
+							<Col xs={4}>
+								<div className="icon-container">
+									<OverlayTrigger
+										placement="bottom"
+										delay={{ show: 250, hide: 400 }}
+										overlay={this.renderMouseTooltip}
+									>
+										<FontAwesomeIcon icon={faMouse} size="3x" className="space-l-r has-hover" />
+									</OverlayTrigger>
+
+									<FontAwesomeIcon icon={faArrowRight} className="space-l-r" />
+									
+									<OverlayTrigger
+										placement="bottom"
+										delay={{ show: 250, hide: 400 }}
+										overlay={this.renderMousePointerTooltip}
+									>
+										<FontAwesomeIcon icon={faMousePointer} size="3x" className="space-l-r has-hover" />
+									</OverlayTrigger>
+
+									<FontAwesomeIcon icon={faArrowRight} className="space-l-r" />
+
+									<div>
+										<span className="fa-stack fa-2x">
+											<OverlayTrigger
+												placement="bottom"
+												delay={{ show: 250, hide: 400 }}
+												overlay={this.renderBoundingBoxTooltip}
+											>
+												<FontAwesomeIcon icon={faBorderStyle} className="fa-stack-2x has-hover" />
+											</OverlayTrigger>
+
+											<OverlayTrigger
+												placement="bottom"
+												delay={{ show: 250, hide: 400 }}
+												overlay={this.renderFishTooltip}
+											>
+												<FontAwesomeIcon icon={faFish} className="fa-stack-1x has-hover" />
+											</OverlayTrigger>
+										</span>
+									</div>
+								</div>
+							</Col>
+						</Row>
+
+						<Row>
+							<Col xs={2}>
+								<div className="row-header">
+									Step 2
+								</div>
+							</Col>
+							<Col xs={4}>
+								<div className="icon-container">
+									<OverlayTrigger
+										placement="bottom"
+										delay={{ show: 250, hide: 400 }}
+										overlay={this.renderMouseTooltip}
+									>
+										<FontAwesomeIcon icon={faMouse} size="3x" className="space-l-r has-hover" />
+									</OverlayTrigger>
+
+									<FontAwesomeIcon icon={faArrowRight} className="space-l-r" />
+									
+									<OverlayTrigger
+										placement="bottom"
+										delay={{ show: 250, hide: 400 }}
+										overlay={this.renderPredictOneTooltip}
+									>
+										<Button id="predictOne">
+											Predict-One
+											<FontAwesomeIcon icon={faBrain} className="space-l" />
+										</Button>
+									</OverlayTrigger>
+								</div>
+							</Col>
+						</Row>
+						
+						<Row>
+							<Col xs={2}>
+								<div className="row-header">
+									Step 3
+								</div>
+							</Col>
+							<Col xs={4}>
+								<div className="icon-container">
+									<OverlayTrigger
+										placement="bottom"
+										delay={{ show: 250, hide: 400 }}
+										overlay={this.renderWaitTooltip}
+									>
+										<FontAwesomeIcon icon={faHourglassHalf} size="3x" className="space-l-r has-hover" />
+									</OverlayTrigger>
+									
+									<FontAwesomeIcon icon={faArrowRight} className="space-l-r" />
+									
+									<OverlayTrigger
+										placement="bottom"
+										delay={{ show: 250, hide: 400 }}
+										overlay={this.renderPredictOneResultsTooltip}
+									>
+										<FontAwesomeIcon icon={faPoll} size="3x" className="space-l-r has-hover" />
+									</OverlayTrigger>
+								</div>
+							</Col>
+						</Row>
+					</Container>
+				</Modal.Body>
+				<Modal.Footer>
+					<Button onClick={this.props.onHide}>Close</Button>
+				</Modal.Footer>
+			</Modal>
 		)
 	}
 }
