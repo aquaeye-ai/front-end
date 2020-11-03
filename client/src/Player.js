@@ -15,7 +15,6 @@ import {
 import { Drawer } from 'antd';
 import {
   faPlay,
-  faPause,
   faBrain,
   faUndo,
 	faFish,
