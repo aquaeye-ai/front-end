@@ -47,7 +47,7 @@ export default class Player extends Component {
     this.init = this.init.bind(this);
 
     // menu buttons
-    this.setBasicUsageInstructionsModalShow = this.setBasicUsageInstructionsModalShow.bind(this);
+    this.setQuickstartModalShow = this.setQuickstartModalShow.bind(this);
     this.play = this.play.bind(this);
     this.undo = this.undo.bind(this);
     this.handleK = this.handleK.bind(this);
@@ -105,7 +105,7 @@ export default class Player extends Component {
       },
       numClasses: 1,
       showPredictOneResultsFilters: false,
-      showBasicUsageInstructionsModal: false
+      showQuickstartModal: false
 		};
   }
 
@@ -242,9 +242,9 @@ export default class Player extends Component {
     this.ctx.strokeRect(this.state.rect.x, this.state.rect.y, this.state.rect.w, this.state.rect.h);
   }
   
-  setBasicUsageInstructionsModalShow(val) {
+  setQuickstartModalShow(val) {
     this.setState({
-      showBasicUsageInstructionsModal: val
+      showQuickstartModal: val
     });
   }
   
@@ -381,7 +381,7 @@ export default class Player extends Component {
     });
   }
 	
-	renderBasicUsageInstructionsTooltip = (props) => (
+	renderQuickstartTooltip = (props) => (
     <Tooltip id="basic-usage-instructions-tooltip" {...props}>
       Show a simple step-by-step guide to help get you started using the app
     </Tooltip>
@@ -689,10 +689,10 @@ export default class Player extends Component {
                     <OverlayTrigger
                       placement="bottom"
                       delay={{ show: 250, hide: 400 }}
-                      overlay={this.renderBasicUsageInstructionsTooltip}
+                      overlay={this.renderQuickstartTooltip}
                     >
                       <div className="btn-container">
-                        <Button id="basicUsageInstructions" onClick={() => this.setBasicUsageInstructionsModalShow(true)}>
+                        <Button id="quickstart" onClick={() => this.setQuickstartModalShow(true)}>
                          	Quickstart
                           <FontAwesomeIcon icon={faInfo} />
                         </Button>
@@ -700,9 +700,9 @@ export default class Player extends Component {
                     </OverlayTrigger>
 								
 										{/* keep modal outside of OverlayTrigger, otherwise hoving over modal will trigger overlay */}	
-										<BasicUsageInstructionsModal
-											show={this.state.showBasicUsageInstructionsModal}
-											onHide={() => this.setBasicUsageInstructionsModalShow(false)}
+										<QuickstartModal
+											show={this.state.showQuickstartModal}
+											onHide={() => this.setQuickstartModalShow(false)}
 										/>
 
                     <OverlayTrigger
@@ -861,7 +861,7 @@ export default class Player extends Component {
 	}
 }
 
-class BasicUsageInstructionsModal extends Component {
+class QuickstartModal extends Component {
   constructor(props) {
 		super();
 	}
