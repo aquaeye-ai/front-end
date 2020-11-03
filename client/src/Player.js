@@ -28,7 +28,8 @@ import {
   faMousePointer,
   faBorderStyle,
 	faArrowRight,
-	faHourglassHalf
+	faHourglassHalf,
+	faArrowsAltH
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Header from './Header';
@@ -910,14 +911,19 @@ class BasicUsageInstructionsModal extends Component {
     </Tooltip>
 	);
 
+	renderPredictOneResultsBtnTooltip = (props) => (
+    <Tooltip id="predict-one-results-btn-tooltip" {...props}>
+			You can revisit your last predict-one results by visiting this button in the left menu	
+    </Tooltip>
+	);
+
 	render() {
 		return (
 			<Modal
 				{...this.props}
-				size="lg"
+				size="md"
 				aria-labelledby="contained-modal-title-vcenter"
 				centered
-				dialogClassName="modal-90w"
 			>
 				<Modal.Header closeButton>
 					<Modal.Title id="contained-modal-title-vcenter">
@@ -927,7 +933,7 @@ class BasicUsageInstructionsModal extends Component {
 				<Modal.Body>
 					<Container fluid>
 						<Row>
-							<Col xs={6}>
+							<Col xs={12}>
 								<h4>Predict-One</h4>
 							</Col>
 						</Row>
@@ -937,7 +943,7 @@ class BasicUsageInstructionsModal extends Component {
 									Step 1
 								</div>
 							</Col>
-							<Col xs={4}>
+							<Col xs={10}>
 								<div className="icon-container">
 									<OverlayTrigger
 										placement="bottom"
@@ -988,7 +994,7 @@ class BasicUsageInstructionsModal extends Component {
 									Step 2
 								</div>
 							</Col>
-							<Col xs={4}>
+							<Col xs={10}>
 								<div className="icon-container">
 									<OverlayTrigger
 										placement="bottom"
@@ -1020,7 +1026,7 @@ class BasicUsageInstructionsModal extends Component {
 									Step 3
 								</div>
 							</Col>
-							<Col xs={4}>
+							<Col xs={10}>
 								<div className="icon-container">
 									<OverlayTrigger
 										placement="bottom"
@@ -1038,6 +1044,19 @@ class BasicUsageInstructionsModal extends Component {
 										overlay={this.renderPredictOneResultsTooltip}
 									>
 										<FontAwesomeIcon icon={faPoll} size="3x" className="space-l-r has-hover" />
+									</OverlayTrigger>
+								
+									<FontAwesomeIcon icon={faArrowsAltH} className="space-l-r" />
+
+									<OverlayTrigger
+										placement="bottom"
+										delay={{ show: 250, hide: 400 }}
+										overlay={this.renderPredictOneResultsBtnTooltip}
+									>
+										<Button id="predictOneResults">
+											Predict-One Results
+											<FontAwesomeIcon icon={faPoll} className="space-l" />
+										</Button>
 									</OverlayTrigger>
 								</div>
 							</Col>

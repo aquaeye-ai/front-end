@@ -1,6 +1,6 @@
 @import './colors.scss';
 
-.modal-dialog.modal-90w {
+.modal-dialog {
   //width: 90%;
   //max-width: 90%;
   opacity: 65%;
@@ -9,8 +9,11 @@
     background-color: $denim;
 
     .modal-header {
+      border-color: $yale-blue;
+
       .h4 {
         color: $home-icon;
+        font-size: 20px;
       }
 
       button.close {
@@ -23,6 +26,8 @@
     } 
 
     .modal-footer {
+      border-color: $yale-blue;
+
       .btn {
         color: $ocean-green; 
 
@@ -34,9 +39,10 @@
 
     .container-fluid {
       .row {
-        .col-6 {
+        .col-12 {
           h4 {
             color: $home-icon;
+            font-size: 18px;
           }
         }
 
@@ -49,7 +55,7 @@
           }
         }
 
-        .col-4 {
+        .col-4, .col-6, .col-10 {
           .icon-container {
             height: 100%;
             display: flex;
@@ -73,8 +79,12 @@
             .btn {
               background-color: $yale-blue;
               color: $ocean-green;
-              width: 100%;
+              width: 150px;
               border-radius: 0;
+
+              &#predictOneResults {
+                width: 200px;
+              }
 
               &:hover {
                 color: $aquamarine;
