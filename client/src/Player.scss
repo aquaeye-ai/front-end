@@ -232,6 +232,16 @@
     .ant-drawer-body {
       background-color: $denim;
 
+      h3 {
+        span {
+          &.highlight {
+            &.note {
+              color: $aquamarine;
+            }
+          }
+        }
+      }
+
       button {
         margin-top: 5px;
         background: $yale-blue;

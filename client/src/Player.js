@@ -35,6 +35,7 @@ import Header from './Header';
 import Body from './Body';
 import Footer from './Footer';
 import ReefLagoonDatabase from './ReefLagoonDatabase';
+import UnknownFish from './UnknownFish';
 import Fmt from './Fmt';
 import './Player.scss';
 
@@ -511,98 +512,170 @@ export default class Player extends Component {
 		return timestamp;
 	}
   
-  renderPredictOneChildrenDrawers = (gallery_info) => (
+  renderPredictOneChildrenDrawers = (gallery_info, unknown_fish_info) => {
     /* display predict-one results */
-    this.state.predictOneResults.top_k_classes.map((r_key, r_idx) => {
-      let first = false
-      let foundFirst = false
+    let noMatches = true
 
-      return (
-        /* search through database to find matching entrie(s) with scores above threshold */
-        Object.keys(gallery_info).map((key, idx) => {
-          let fish = gallery_info[key]
+    return (
+      /* iterate through results */
+      this.state.predictOneResults.top_k_classes.map((r_key, r_idx) => {
+        let first = false
+        let foundFirst = false
 
-          if (fish.common_group_name === r_key && this.state.predictOneResults.top_k_scores[r_idx] > this.state.threshold && (r_idx+1) <= this.state.K) {
-            if (foundFirst === true) {
-              first = false
-            } else {
-              first = true
-              foundFirst = true
-            }
+        return (
+          /* search through database to find matching entrie(s) with scores above threshold 
+           * TODO: don't use loop; instead use dictionary indexing */
+          Object.keys(gallery_info).map((key, idx) => {
+            let fish = gallery_info[key]
 
-            /* NOTE: there are several 'child' elements returned in lists and React requires these elements to possess unique 
-             * 'key' attributes.  So, we do our best to provide unique 'key' attributes without collision. */
-            return (
-              <React.Fragment key={this.hashStr(`predict-one-results-parent-${fish.scientific_name}-not-empty`)}>
-                {/* this trick works because in Javascript, 'true && expression' evaluates to 'expression' and 'false && expression' evaluates to 'false': https://reactjs.org/docs/conditional-rendering.html */} 
-                {first === true &&
-                  <React.Fragment key={this.hashStr(`predict-one-results-parent-header-${fish.scientific_name}`)}>
-                    <h1>{Fmt.capFirstLetter(r_key)}</h1>
-                    <h2>Match: {Fmt.num(this.state.predictOneResults.top_k_scores[r_idx], {precision: 2, suffix: '%', multiplier: 1e2})}</h2>
-                    <div className="divider"></div>
-                  </React.Fragment>
-                }
-                <h3>{fish.common_name}</h3>
-                <Image src={fish.thumbnail.url} fluid rounded/>
-                <p className="photo-credit">
-                  Photo credit: <a href={fish.thumbnail.credit.owner.url}>{fish.thumbnail.credit.owner.name}</a>,&nbsp;  
-                  <a href={fish.thumbnail.credit.license.url}>{fish.thumbnail.credit.license.name}</a> via Wikimedia Commons
-                </p>
-                <Button variant="primary" onClick={() => this.showChildPredictOneDrawer(fish.scientific_name)}>
-                  Learn more 
-                  <FontAwesomeIcon icon={faAngleRight} />
-                </Button>
-                <Drawer
-                  title={fish.common_name}
-                  width={320}
-                  closable={false}
-                  onClose={() => this.onCloseChildPredictOneDrawer(fish.scientific_name)}
-                  visible={this.state.childrenPredictOneDrawerVisible[fish.scientific_name]}
-                >
+            if (fish.common_group_name === r_key && this.state.predictOneResults.top_k_scores[r_idx] > this.state.threshold && (r_idx+1) <= this.state.K) {
+              noMatches = false
+
+              if (foundFirst === true) {
+                first = false
+              } else {
+                first = true
+                foundFirst = true
+              }
+
+              /* NOTE: there are several 'child' elements returned in lists and React requires these elements to possess unique 
+               * 'key' attributes.  So, we do our best to provide unique 'key' attributes without collision. */
+              return (
+                <React.Fragment key={this.hashStr(`predict-one-results-parent-${fish.scientific_name}-not-empty`)}>
+                  {/* this trick works because in Javascript, 'true && expression' evaluates to 'expression' and 'false && expression' evaluates to 'false': https://reactjs.org/docs/conditional-rendering.html */} 
+                  {first === true &&
+                    <React.Fragment key={this.hashStr(`predict-one-results-parent-header-${fish.scientific_name}`)}>
+                      <h1>{Fmt.capFirstLetter(r_key)}</h1>
+                      <h2>Match: {Fmt.num(this.state.predictOneResults.top_k_scores[r_idx], {precision: 2, suffix: '%', multiplier: 1e2})}</h2>
+                      <div className="divider"></div>
+                    </React.Fragment>
+                  }
+                  <h3>{fish.common_name}</h3>
                   <Image src={fish.thumbnail.url} fluid rounded/>
                   <p className="photo-credit">
                     Photo credit: <a href={fish.thumbnail.credit.owner.url}>{fish.thumbnail.credit.owner.name}</a>,&nbsp;  
                     <a href={fish.thumbnail.credit.license.url}>{fish.thumbnail.credit.license.name}</a> via Wikimedia Commons
                   </p>
-                  <p className="detail">
-                    <span className="header">Species: </span>
-                    {fish.scientific_name}
+                  <Button variant="primary" onClick={() => this.showChildPredictOneDrawer(fish.scientific_name)}>
+                    Learn more 
+                    <FontAwesomeIcon icon={faAngleRight} />
+                  </Button>
+                  <Drawer
+                    title={fish.common_name}
+                    width={320}
+                    closable={false}
+                    onClose={() => this.onCloseChildPredictOneDrawer(fish.scientific_name)}
+                    visible={this.state.childrenPredictOneDrawerVisible[fish.scientific_name]}
+                  >
+                    <Image src={fish.thumbnail.url} fluid rounded/>
+                    <p className="photo-credit">
+                      Photo credit: <a href={fish.thumbnail.credit.owner.url}>{fish.thumbnail.credit.owner.name}</a>,&nbsp;  
+                      <a href={fish.thumbnail.credit.license.url}>{fish.thumbnail.credit.license.name}</a> via Wikimedia Commons
+                    </p>
+                    <p className="detail">
+                      <span className="header">Species: </span>
+                      {fish.scientific_name}
+                    </p>
+                    <p className="detail">
+                      <span className="header">Status: </span>
+                      {fish.status}
+                    </p>
+                    <p className="detail">
+                      <span className="header">Diet: </span>
+                      {fish.diet}
+                    </p>
+                    <p className="detail">
+                      <span className="header">Reproduction: </span>
+                      {fish.reproduction}
+                    </p>
+                    <p className="detail header">Learn more</p>
+                    <Nav className="flex-column">
+                      {
+                        fish.info_urls.map((info, idy) => (
+                          <Nav.Link href={info.url} target="_blank" key={this.hashStr(`predict-one-results-child-${idy}-${fish.scientific_name}-${r_idx}-${idx}-${idy}`)}>
+                            {idy}. {info.name}
+                            <FontAwesomeIcon icon={faExternalLinkAlt} />
+                          </Nav.Link>
+                        ))
+                      }
+                    </Nav> 
+                  </Drawer>
+                </React.Fragment>
+              )
+            } else if ((idx === Object.keys(gallery_info).length - 1) && (r_idx === this.state.predictOneResults.top_k_classes.length - 1) && noMatches === true) {
+              let fish = unknown_fish_info
+                
+              return (
+                <React.Fragment key={this.hashStr(`predict-one-results-parent-${fish.scientific_name}-not-empty`)}>
+                  <h1>Oops!</h1>
+                  <h2>The model couldn't find a match</h2>
+                  <div className="divider"></div>
+                  <h3>
+                    Try relaxing the model filters under <span className="highlight note">Results Filters</span> in the left 
+                    menu and then revisit these results by clicking <span className="highlight note">Predict-One Results</span> <br/> 
+                    e.g. lower the <span className="highlight note">Threshold</span> or 
+                    increase <span className="highlight note">K</span> to widen the set of possible matches</h3>
+                  <Image src={fish.thumbnail.url} fluid rounded/>
+                  <p className="photo-credit">
+                    Photo credit: <a href={fish.thumbnail.credit.owner.url}>{fish.thumbnail.credit.owner.name}</a>,&nbsp;  
+                    <a href={fish.thumbnail.credit.license.url}>{fish.thumbnail.credit.license.name}</a> via Wikimedia Commons
                   </p>
-                  <p className="detail">
-                    <span className="header">Status: </span>
-                    {fish.status}
-                  </p>
-                  <p className="detail">
-                    <span className="header">Diet: </span>
-                    {fish.diet}
-                  </p>
-                  <p className="detail">
-                    <span className="header">Reproduction: </span>
-                    {fish.reproduction}
-                  </p>
-                  <p className="detail header">Learn more</p>
-                  <Nav className="flex-column">
-                    {
-                      fish.info_urls.map((info, idy) => (
-                        <Nav.Link href={info.url} target="_blank" key={this.hashStr(`predict-one-results-child-${idy}-${fish.scientific_name}-${r_idx}-${idx}-${idy}`)}>
-                          {idy}. {info.name}
-                          <FontAwesomeIcon icon={faExternalLinkAlt} />
-                        </Nav.Link>
-                      ))
-                    }
-                  </Nav> 
-                </Drawer>
-              </React.Fragment>
-            )
-          } else {
-            /* We have to make a return statement for every case in a .map() call.
-             * TODO: We could avoid this by directly using a mapping dict of common_group_names to keys in the database */
-            return (<React.Fragment key={this.hashStr(`predict-one-results-parent-${fish.scientific_name}-empty`)}></React.Fragment>) 
-          }
-        })
-      )  
-    })
-  );
+                  <Button variant="primary" onClick={() => this.showChildPredictOneDrawer(fish.scientific_name)}>
+                    Learn more 
+                    <FontAwesomeIcon icon={faAngleRight} />
+                  </Button>
+                  <Drawer
+                    title={fish.common_name}
+                    width={320}
+                    closable={false}
+                    onClose={() => this.onCloseChildPredictOneDrawer(fish.scientific_name)}
+                    visible={this.state.childrenPredictOneDrawerVisible[fish.scientific_name]}
+                  >
+                    <Image src={fish.thumbnail.url} fluid rounded/>
+                    <p className="photo-credit">
+                      Photo credit: <a href={fish.thumbnail.credit.owner.url}>{fish.thumbnail.credit.owner.name}</a>,&nbsp;  
+                      <a href={fish.thumbnail.credit.license.url}>{fish.thumbnail.credit.license.name}</a> via Wikimedia Commons
+                    </p>
+                    <p className="detail">
+                      <span className="header">Species: </span>
+                      {fish.scientific_name}
+                    </p>
+                    <p className="detail">
+                      <span className="header">Status: </span>
+                      {fish.status}
+                    </p>
+                    <p className="detail">
+                      <span className="header">Diet: </span>
+                      {fish.diet}
+                    </p>
+                    <p className="detail">
+                      <span className="header">Reproduction: </span>
+                      {fish.reproduction}
+                    </p>
+                    <p className="detail header">Learn more</p>
+                    <Nav className="flex-column">
+                      {
+                        fish.info_urls.map((info, idy) => (
+                          <Nav.Link href={info.url} target="_blank" key={this.hashStr(`predict-one-results-child-${idy}-${fish.scientific_name}-${r_idx}-${idx}-${idy}`)}>
+                            {idy}. {info.name}
+                            <FontAwesomeIcon icon={faExternalLinkAlt} />
+                          </Nav.Link>
+                        ))
+                      }
+                    </Nav> 
+                  </Drawer>
+                </React.Fragment>
+              )
+            } else {
+              /* We have to make a return statement for every case in a .map() call.
+               * TODO: We could avoid this by directly using a mapping dict of common_group_names to keys in the database */
+              return (<React.Fragment key={this.hashStr(`predict-one-results-parent-${fish.scientific_name}-empty`)}></React.Fragment>) 
+            }
+          })
+        )  
+      })
+    )
+  };
 
   renderFishGalleryChildrenDrawers = (gallery_info) => (
     Object.keys(gallery_info).map((key, idx) => {
@@ -839,7 +912,7 @@ export default class Player extends Component {
 									onClose={this.onCloseParentPredictOneDrawer}
 									visible={this.state.parentPredictOneDrawerVisible}
 								>
-                  {this.renderPredictOneChildrenDrawers(ReefLagoonDatabase)}
+                  {this.renderPredictOneChildrenDrawers(ReefLagoonDatabase, UnknownFish)}
 								</Drawer>
 
               </Col>
