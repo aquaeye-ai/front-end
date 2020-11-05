@@ -94,7 +94,7 @@ app.get('/stream/:id/poster', function(req, res) {
 // GET, /predict/num-classes 
 app.get('/predict/num-classes', async function(req, res) {
   try {
-    const response = await axios.get('http://localhost:8000/num_classes');
+    const response = await axios.get('http://localhost:8000/num-classes');
     res.json(response.data);
   } catch (error) {
     console.error(error);
@@ -146,7 +146,7 @@ app.post('/predict/one', async function(req, res) {
       depth: req.body.frame.depth,
       image: selection_enc 
     };
-    const model_response = await axios.post('http://localhost:8000/eval', json_payload);
+    const model_response = await axios.post('http://localhost:8000/predict/one', json_payload);
 
     // return model api response
     res.json(model_response.data);
