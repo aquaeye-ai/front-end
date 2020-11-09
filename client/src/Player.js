@@ -238,9 +238,11 @@ export default class Player extends Component {
   }
 
   draw() {
-    this.ctx.lineWidth = 1.5;
+    this.ctx.lineWidth = 2.0;
     this.ctx.strokeStyle = 'rgb(0, 255, 255)';
     this.ctx.strokeRect(this.state.rect.x, this.state.rect.y, this.state.rect.w, this.state.rect.h);
+    this.ctx.fillStyle = 'rgba(225, 225, 225, 0.125)';
+    this.ctx.fillRect(this.state.rect.x, this.state.rect.y, this.state.rect.w, this.state.rect.h);
   }
   
   setQuickstartModalShow(val) {

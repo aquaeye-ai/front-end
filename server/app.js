@@ -21,6 +21,7 @@ var hls_link = null;
 var wCap = null;
 var frame = null;
 var frameEncoded = null;
+var frameCount = 0
 const height = 1080;
 const width = 1920;
 const FPS = 30;
@@ -41,14 +42,31 @@ ydl.exec(youtube_url, ['--format=96', '-g'], {}, (err, output) => {
 
 	// emit captured livestream video frame-by-frame and emit each frame at specified interval using socket.io 
 	setInterval(() => {
-		// read raw frame
-		frame = wCap.read();
-
-		// encode frame for efficient transfer to clients
-		frameEncoded = cv.imencode('.jpg', frame).toString('base64');
-		
-		// emit frame
-		io.emit('image', frameEncoded);
+    try {
+      // read raw frame
+      frame = wCap.read();
+      frameCount += 1;
+      
+      // encode frame for efficient transfer to clients
+      // 
+      // NOTE: This first 'if' condition is a jank fix to a problem I dont' fully understand: we reset the capture every 140 
+      // frames because otherwise the capture errors out and stalls for several seconds approximately every 148th frame 
+      // (not exactly 148 it seems, so that's why we modulo 140).  frame.empty sets to true when this stall behavior happens.  
+      // Originally, we would only check for that condition before resetting the capture.  Even though the capture behavior can 
+      // be reset if frame.empty is detected, the stalling causes a noticeably long delay.  This is why we also rely on 
+      // modulo'ing every 140 frames to preempt the stall behavior.  The video stream is noticeably smoother using the approach.
+      if (frameCount % 140 == 0 || frame.empty) { 
+        wCap.reset();
+        frame = wCap.read();
+      } else {
+        frameEncoded = cv.imencode('.jpg', frame).toString('base64');
+        
+        // emit frame
+        io.emit('image', frameEncoded);
+      }
+    } catch (error) {
+      console.log(error);
+    } 
 	}, 1000 / FPS)
 });
 
@@ -159,7 +177,6 @@ app.post('/predict/one', async function(req, res) {
 app.get('/quote', async function(req, res) {
   try {
     const response = await axios.get('http://localhost:8000/quote');
-    console.log(response);
     res.json(response['data']);
   } catch (error) {
     console.error(error);
