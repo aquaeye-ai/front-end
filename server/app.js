@@ -1,9 +1,15 @@
+// environment variables
+const dotenv = require('dotenv').config({path: __dirname + '/.env'});
+const dotenvExpand = require('dotenv-expand');
+dotenvExpand(dotenv);
+
+// miscellaneous
+const fs = require('fs');
 const cv = require('opencv4nodejs');
 const path = require('path');
 const express = require('express');
 const app = express();
-const server = require('http').Server(app);
-const io = require('socket.io')(server);
+const http = require('http');
 const cors = require('cors');
 const ydl = require('youtube-dl');
 const _ = require('lodash');
@@ -17,6 +23,7 @@ const streams = [
     }
 ];
 
+// youtube-dl variables
 var hls_link = null;
 var wCap = null;
 var frame = null;
@@ -27,48 +34,7 @@ const width = 1920;
 const FPS = 30;
 const youtube_url = "https://www.youtube.com/watch?v=1nWGig6pQ7Q&feature=emb_title&ab_channel=CaliforniaAcademyofSciences";
 
-/* Extract the HLS link for the youtube livestream so that we can intercept it.
-	We need to extract this automatically since the hls link will expire after few hours. */
-ydl.exec(youtube_url, ['--format=96', '-g'], {}, (err, output) => {
-	if (err) throw err
-
-	console.log('\nyoutube-dl finished HLS link extraction:');
-	console.log(output.join('\n'));
-	console.log('\n');
-	hls_link = output[0];
-	wCap = new cv.VideoCapture(hls_link);//0);//"/home/nightrider/Videos/mashup.mp4");
-	wCap.set(cv.CAP_PROP_FRAME_WIDTH, width);
-	wCap.set(cv.CAP_PROP_FRAME_HEIGHT, height);
-
-	// emit captured livestream video frame-by-frame and emit each frame at specified interval using socket.io 
-	setInterval(() => {
-    try {
-      // read raw frame
-      frame = wCap.read();
-      frameCount += 1;
-      
-      // encode frame for efficient transfer to clients
-      // 
-      // NOTE: This first 'if' condition is a jank fix to a problem I dont' fully understand: we reset the capture every 140 
-      // frames because otherwise the capture errors out and stalls for several seconds approximately every 148th frame 
-      // (not exactly 148 it seems, so that's why we modulo 140).  frame.empty sets to true when this stall behavior happens.  
-      // Originally, we would only check for that condition before resetting the capture.  Even though the capture behavior can 
-      // be reset if frame.empty is detected, the stalling causes a noticeably long delay.  This is why we also rely on 
-      // modulo'ing every 140 frames to preempt the stall behavior.  The video stream is noticeably smoother using the approach.
-      if (frameCount % 140 == 0 || frame.empty) { 
-        wCap.reset();
-        frame = wCap.read();
-      } else {
-        frameEncoded = cv.imencode('.jpg', frame).toString('base64');
-        
-        // emit frame
-        io.emit('image', frameEncoded);
-      }
-    } catch (error) {
-      console.log(error);
-    } 
-	}, 1000 / FPS)
-});
+const MODEL_SERVER_API = process.env.REACT_APP_HOST_ENV === "production" ? process.env.REACT_APP_MODEL_SERVER_API_PROD : process.env.REACT_APP_MODEL_SERVER_API_DEV; 
 
 app.use(express.json({
   limit: "50mb"
@@ -82,6 +48,8 @@ app.use(cors()); // to support CORS
 //app.get('/', (req, res) => {
 //    res.sendFile(path.join(__dirname, 'index.html'));
 //});
+
+// GET, /streams
 app.get('/streams', function(req, res) {
 	_.each(streams, function (stream) {
 		frame = wCap.read();
@@ -95,10 +63,14 @@ app.get('/streams', function(req, res) {
 	});
 	res.json(streams);
 });
+
+// GET, /stream/:id/data
 app.get('/stream/:id/data', function(req, res) {
   const id = parseInt(req.params.id, 10);
   res.json(streams[id]);
 });
+
+// GET, /stream/:id/poster
 app.get('/stream/:id/poster', function(req, res) {
   //thumbsupply.generateThumbnail(`assets/${req.params.id}.mp4`)
   //.then(thumb => res.sendFile(thumb))
@@ -112,7 +84,7 @@ app.get('/stream/:id/poster', function(req, res) {
 // GET, /predict/num-classes 
 app.get('/predict/num-classes', async function(req, res) {
   try {
-    const response = await axios.get('http://localhost:8000/num-classes');
+    const response = await axios.get(`${MODEL_SERVER_API}/num-classes`);
     res.json(response.data);
   } catch (error) {
     console.error(error);
@@ -164,7 +136,7 @@ app.post('/predict/one', async function(req, res) {
       depth: req.body.frame.depth,
       image: selection_enc 
     };
-    const model_response = await axios.post('http://localhost:8000/predict/one', json_payload);
+    const model_response = await axios.post(`${MODEL_SERVER_API}/predict/one`, json_payload);
 
     // return model api response
     res.json(model_response.data);
@@ -176,23 +148,72 @@ app.post('/predict/one', async function(req, res) {
 // GET, simple route for testing model api
 app.get('/quote', async function(req, res) {
   try {
-    const response = await axios.get('http://localhost:8000/quote');
+    const response = await axios.get(`${MODEL_SERVER_API}/quote`);
     res.json(response['data']);
   } catch (error) {
     console.error(error);
   }
 });
 
+const server = http.createServer(app);
+const io = require('socket.io')(server);
+
 /* 
-Ports:
-	React client: 3000 (implicit when running 'nodemon app' from client directory)
-	Express app: 4000
-	http server: 5000
-  Model api server: 8000
+ * Extract the HLS link for the youtube livestream so that we can intercept it.	
+ * We need to extract this automatically since the hls link will expire after few hours. 
 */
-server.listen(5000, () => {
-	console.log('Server listening on port 5000!');
+ydl.exec(youtube_url, ['--format=96', '-g'], {}, (err, output) => {
+	if (err) throw err
+
+	console.log('\nyoutube-dl finished HLS link extraction:');
+	console.log(output.join('\n'));
+	console.log('\n');
+	hls_link = output[0];
+	wCap = new cv.VideoCapture(hls_link);//0);//"/home/nightrider/Videos/mashup.mp4");
+	wCap.set(cv.CAP_PROP_FRAME_WIDTH, width);
+	wCap.set(cv.CAP_PROP_FRAME_HEIGHT, height);
+
+	// emit captured livestream video frame-by-frame and emit each frame at specified interval using socket.io 
+	setInterval(() => {
+    try {
+      // read raw frame
+      frame = wCap.read();
+      frameCount += 1;
+      
+      // encode frame for efficient transfer to clients
+      // 
+      // NOTE: This first 'if' condition is a jank fix to a problem I dont' fully understand: we reset the capture every 140 
+      // frames because otherwise the capture errors out and stalls for several seconds approximately every 148th frame 
+      // (not exactly 148 it seems, so that's why we modulo 140).  frame.empty sets to true when this stall behavior happens.  
+      // Originally, we would only check for that condition before resetting the capture.  Even though the capture behavior can 
+      // be reset if frame.empty is detected, the stalling causes a noticeably long delay.  This is why we also rely on 
+      // modulo'ing every 140 frames to preempt the stall behavior.  The video stream is noticeably smoother using the approach.
+      if (frameCount % 140 == 0 || frame.empty) { 
+        wCap.reset();
+        frame = wCap.read();
+      } else {
+        frameEncoded = cv.imencode('.jpg', frame).toString('base64');
+        
+        // emit frame
+        io.emit('image', frameEncoded);
+      }
+    } catch (error) {
+      console.log(error);
+    } 
+	}, 1000 / FPS)
 });
-app.listen(4000, () => {
-	console.log('App listening on port 4000!');
+
+/* 
+ * Ports:
+ * 	React Client: 80 
+ * 	Express App: 4000
+ * 	HTTP Server: 5000
+ * 	Model API Server: 8000
+*/
+const MODEL_SERVER_IP = process.env.REACT_APP_HOST_ENV === "production" ? process.env.REACT_APP_MODEL_SERVER_IP_PROD : process.env.REACT_APP_MODEL_SERVER_IP_DEV;
+server.listen(process.env.REACT_APP_HTTP_SERVER_PORT, MODEL_SERVER_IP, () => {
+	console.log('HTTP Server listening on port 5000!');
+});
+app.listen(process.env.REACT_APP_EXPRESS_SERVER_PORT, MODEL_SERVER_IP, () => {
+	console.log('Express App listening on port 4000!');
 });

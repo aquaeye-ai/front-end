@@ -39,7 +39,9 @@ import UnknownFish from './UnknownFish';
 import Fmt from './Fmt';
 import './Player.scss';
 
-let socket = io('http://localhost:5000')
+let HTTP_SERVER_API = process.env.REACT_APP_HOST_ENV === 'production' ? process.env.REACT_APP_HTTP_SERVER_API_PROD : process.env.REACT_APP_HTTP_SERVER_API_DEV
+
+let socket = io(HTTP_SERVER_API)
 	
 export default class Player extends Component {
   constructor(props) {
@@ -113,7 +115,7 @@ export default class Player extends Component {
   async componentDidMount() {
     // connect to the broadcasting port for the stream
 		try {
-			const stream_data_res = await fetch(`http://localhost:4000/stream/${this.state.streamId}/data`);
+			const stream_data_res = await fetch(`https://aquaeye.ai:4000/stream/${this.state.streamId}/data`);
 			const stream_data = await stream_data_res.json();
 			this.setState({ streamData: stream_data });
 
@@ -125,7 +127,7 @@ export default class Player extends Component {
 			//};
 
 			// we need to reconnect each time we mount the component since we disconnect on 'componentWillUnmount' below
-			socket.connect('http://localhost:5000');
+			socket.connect(HTTP_SERVER_API);
 			socket.on('image', image => {
 				const imageElm = document.getElementById('streamImage');
 				imageElm.src = `data:image/jpeg;base64,${image}`;
@@ -139,7 +141,7 @@ export default class Player extends Component {
       const num_classes_req_settings = {
         method: 'GET'
       };
-      const num_classes_res = await fetch('http://localhost:4000/predict/num-classes', num_classes_req_settings);
+      const num_classes_res = await fetch('https://aquaeye.ai:4000/predict/num-classes', num_classes_req_settings);
       const num_classes_data = await num_classes_res.json(); 
       this.setState({ 
         numClasses: num_classes_data.num_classes,
@@ -305,7 +307,7 @@ export default class Player extends Component {
     };
 
     try {
-      const response = await fetch('http://localhost:4000/predict/one', config);
+      const response = await fetch('https://aquaeye.ai:4000/predict/one', config);
       const data = await response.json();
 
       this.setState({
