@@ -2,7 +2,7 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 
 Run: 
 
-1. *nodemon start* from `/client`
+1. *REACT_APP_PORT={80 or 3000} nodemon start* from `/client`
 
 ## Available Scripts
 
