@@ -34,7 +34,7 @@ const width = 1920;
 const FPS = 30;
 const youtube_url = "https://www.youtube.com/watch?v=1nWGig6pQ7Q&feature=emb_title&ab_channel=CaliforniaAcademyofSciences";
 
-const MODEL_SERVER_API = process.env.REACT_APP_HOST_ENV === "production" ? process.env.REACT_APP_MODEL_SERVER_API_PROD : process.env.REACT_APP_MODEL_SERVER_API_DEV; 
+const MODEL_SERVER_IP = process.env.REACT_APP_HOST_ENV === "production" ? process.env.REACT_APP_MODEL_SERVER_IP_PROD : process.env.REACT_APP_MODEL_SERVER_IP_DEV; 
 
 app.use(express.json({
   limit: "50mb"
@@ -84,7 +84,7 @@ app.get('/stream/:id/poster', function(req, res) {
 // GET, /predict/num-classes 
 app.get('/predict/num-classes', async function(req, res) {
   try {
-    const response = await axios.get(`${MODEL_SERVER_API}/num-classes`);
+    const response = await axios.get(`http://${MODEL_SERVER_IP}:${process.env.REACT_APP_MODEL_SERVER_PORT}/num-classes`);
     res.json(response.data);
   } catch (error) {
     console.error(error);
@@ -136,7 +136,7 @@ app.post('/predict/one', async function(req, res) {
       depth: req.body.frame.depth,
       image: selection_enc 
     };
-    const model_response = await axios.post(`${MODEL_SERVER_API}/predict/one`, json_payload);
+    const model_response = await axios.post(`http://${MODEL_SERVER_IP}:${process.env.REACT_APP_MODEL_SERVER_PORT}/predict/one`, json_payload);
 
     // return model api response
     res.json(model_response.data);
@@ -148,7 +148,7 @@ app.post('/predict/one', async function(req, res) {
 // GET, simple route for testing model api
 app.get('/quote', async function(req, res) {
   try {
-    const response = await axios.get(`${MODEL_SERVER_API}/quote`);
+    const response = await axios.get(`http://${MODEL_SERVER_IP}:${process.env.REACT_APP_MODEL_SERVER_PORT}/quote`);
     res.json(response['data']);
   } catch (error) {
     console.error(error);
@@ -210,10 +210,9 @@ ydl.exec(youtube_url, ['--format=96', '-g'], {}, (err, output) => {
  * 	HTTP Server: 5000
  * 	Model API Server: 8000
 */
-const MODEL_SERVER_IP = process.env.REACT_APP_HOST_ENV === "production" ? process.env.REACT_APP_MODEL_SERVER_IP_PROD : process.env.REACT_APP_MODEL_SERVER_IP_DEV;
-server.listen(process.env.REACT_APP_HTTP_SERVER_PORT, MODEL_SERVER_IP, () => {
-	console.log('HTTP Server listening on port 5000!');
+server.listen(process.env.REACT_APP_HTTP_SERVER_PORT, process.env.REACT_APP_SERVER_IP, () => {
+	console.log(`HTTP Server listening on ${process.env.REACT_APP_SERVER_IP}:${process.env.REACT_APP_HTTP_SERVER_PORT}!`);
 });
-app.listen(process.env.REACT_APP_EXPRESS_SERVER_PORT, MODEL_SERVER_IP, () => {
-	console.log('Express App listening on port 4000!');
+app.listen(process.env.REACT_APP_EXPRESS_SERVER_PORT, process.env.REACT_APP_SERVER_IP, () => {
+	console.log(`Express App listening on port ${process.env.REACT_APP_SERVER_IP}:${process.env.REACT_APP_EXPRESS_SERVER_PORT}!`);
 });

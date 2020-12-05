@@ -40,6 +40,7 @@ import Fmt from './Fmt';
 import './Player.scss';
 
 let HTTP_SERVER_API = process.env.REACT_APP_HOST_ENV === 'production' ? process.env.REACT_APP_HTTP_SERVER_API_PROD : process.env.REACT_APP_HTTP_SERVER_API_DEV
+let EXPRESS_SERVER_API = process.env.REACT_APP_HOST_ENV === 'production' ? process.env.REACT_APP_EXPRESS_SERVER_API_PROD : process.env.REACT_APP_EXPRESS_SERVER_API_DEV
 
 let socket = io(HTTP_SERVER_API)
 	
@@ -115,7 +116,7 @@ export default class Player extends Component {
   async componentDidMount() {
     // connect to the broadcasting port for the stream
 		try {
-			const stream_data_res = await fetch(`https://aquaeye.ai:4000/stream/${this.state.streamId}/data`);
+			const stream_data_res = await fetch(`${EXPRESS_SERVER_API}/stream/${this.state.streamId}/data`);
 			const stream_data = await stream_data_res.json();
 			this.setState({ streamData: stream_data });
 
@@ -141,7 +142,7 @@ export default class Player extends Component {
       const num_classes_req_settings = {
         method: 'GET'
       };
-      const num_classes_res = await fetch('https://aquaeye.ai:4000/predict/num-classes', num_classes_req_settings);
+      const num_classes_res = await fetch(`${EXPRESS_SERVER_API}/predict/num-classes`, num_classes_req_settings);
       const num_classes_data = await num_classes_res.json(); 
       this.setState({ 
         numClasses: num_classes_data.num_classes,
@@ -307,7 +308,7 @@ export default class Player extends Component {
     };
 
     try {
-      const response = await fetch('https://aquaeye.ai:4000/predict/one', config);
+      const response = await fetch(`${EXPRESS_SERVER_API}/predict/one`, config);
       const data = await response.json();
 
       this.setState({
