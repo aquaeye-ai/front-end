@@ -10,7 +10,8 @@ import {
   Tooltip,
   Image,
 	Nav,
-	Modal
+	Modal,
+	Form
 } from 'react-bootstrap';
 import { Drawer } from 'antd';
 import {
@@ -29,7 +30,8 @@ import {
 	faArrowRight,
 	faHourglassHalf,
 	faArrowsAltH,
-  faReply
+  faReply,
+	faCheck
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Header from './Header';
@@ -79,7 +81,8 @@ export default class Player extends Component {
     
     // results feedback
 		this.showPredictOneResultsFeedbackDrawer = this.showPredictOneResultsFeedbackDrawer.bind(this);
-		this.onClosePredictOneResultsFeedbackDrawer = this.onClosePredictOneResultsFeedbackDrawer.bind(this);
+		this.onClosePredictOneResultsFeedbackDrawer = this.onClosePredictOneResultsFeedbackDrawer.bind(this);	
+		this.predictOneResultsFeedbackFormSelectChanged = this.predictOneResultsFeedbackFormSelectChanged.bind(this);
   
 		this.state = {
 			streamId: this.props.match.params.id,
@@ -112,6 +115,8 @@ export default class Player extends Component {
         monodactylus_argenteus: false,
         trachinotus_mookalee: false
       },
+			predictOneResultsFeedbackDrawerVisible: false,
+			predictOneResultsImageChoicesVisible: false,
       numClasses: 1,
       showPredictOneResultsFilters: false,
       showQuickstartModal: false
@@ -518,6 +523,20 @@ export default class Player extends Component {
     });
   };
 
+	predictOneResultsFeedbackFormSelectChanged(e) {
+		const val = e.target.value;
+		var show = false;
+
+		if (val === "no") {
+			show = true;
+		} else {
+			show = false;
+		}
+
+    this.setState({
+      predictOneResultsImageChoicesVisible: show
+    });
+	}
 
 	// hash function for strings: https://stackoverflow.com/questions/7616461/generate-a-hash-from-string-in-javascript
 	hashStr(message) {
@@ -579,13 +598,26 @@ export default class Player extends Component {
                               <FontAwesomeIcon icon={faReply} />
                             </a> 
                             <Drawer
-                              title="Tell us how we can improve"
+                              title="How did we do?"
                               width={520}
                               closable={false}
                               onClose={this.onClosePredictOneResultsFeedbackDrawer}
                               visible={this.state.predictOneResultsFeedbackDrawerVisible}
                             >
-                              {this.renderPredictOneResultsFeedbackDrawerContent(ReefLagoonDatabase)}
+															<Form>
+																<Form.Group controlId="predictOneResultsFeedbackForm">
+																	<Form.Label>Top Result Correct?</Form.Label>
+																	<Form.Control as="select" defaultValue={'yes'} onChange={this.predictOneResultsFeedbackFormSelectChanged} size="sm" custom>
+																		<option value="yes">Yes</option>
+																		<option value="no">No</option>
+																	</Form.Control>
+																	<Button variant="primary" onClick={() => this.showChildPredictOneDrawer(fish.scientific_name)}>
+																		Submit 
+                              			<FontAwesomeIcon icon={faCheck} />
+																	</Button>
+																</Form.Group>
+															</Form>
+                              {this.state.predictOneResultsImageChoicesVisible ? this.renderPredictOneResultsFeedbackDrawerContent(ReefLagoonDatabase) : null}
                             </Drawer>
                           </p>
                         }
@@ -729,16 +761,19 @@ export default class Player extends Component {
 			 * 'key' attributes.  So, we do our best to provide unique 'key' attributes without collision. */
       return (
         <React.Fragment key={this.hashStr(`predict-one-results-feedback-${idx}-${fish.scientific_name}`)}>
+					{idx === 0 &&
+        		<React.Fragment key={this.hashStr(`predict-one-results-feedback-header`)}>
+							<h1>Which Fish Was Your Selection?</h1>
+						</React.Fragment>
+					}
           <h1>{fish.common_name}</h1>
-          <Image src={fish.thumbnail.url} fluid rounded/>
+          <a className="img-link-container-feedback" href="">
+						<Image src={fish.thumbnail.url} fluid rounded/>
+					</a>
           <p className="photo-credit">
             Photo credit: <a href={fish.thumbnail.credit.owner.url}>{fish.thumbnail.credit.owner.name}</a>,&nbsp;  
             <a href={fish.thumbnail.credit.license.url}>{fish.thumbnail.credit.license.name}</a> via Wikimedia Commons
           </p>
-          <Button variant="primary" onClick={() => this.showChildFishGalleryDrawer(fish.scientific_name)}>
-            Learn more 
-            <FontAwesomeIcon icon={faAngleRight} />
-          </Button>
         </React.Fragment>
       )
     })

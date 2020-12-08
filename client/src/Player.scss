@@ -260,6 +260,19 @@
         }
       }
 
+      a {
+        &.img-link-container-feedback {
+          img {
+            opacity: 75%;
+
+            &:hover {
+              opacity: 100%;
+              border: 4px solid $aquamarine;
+            }
+          }
+        }
+      }
+
       button {
         margin-top: 5px;
         background: $yale-blue;
