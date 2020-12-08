@@ -28,7 +28,8 @@ import {
   faBorderStyle,
 	faArrowRight,
 	faHourglassHalf,
-	faArrowsAltH
+	faArrowsAltH,
+  faReply
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Header from './Header';
@@ -75,6 +76,10 @@ export default class Player extends Component {
 		this.onCloseParentPredictOneDrawer = this.onCloseParentPredictOneDrawer.bind(this);
  	 	this.showChildPredictOneDrawer = this.showChildPredictOneDrawer.bind(this);
   	this.onCloseChildPredictOneDrawer = this.onCloseChildPredictOneDrawer.bind(this);
+    
+    // results feedback
+		this.showPredictOneResultsFeedbackDrawer = this.showPredictOneResultsFeedbackDrawer.bind(this);
+		this.onClosePredictOneResultsFeedbackDrawer = this.onClosePredictOneResultsFeedbackDrawer.bind(this);
   
 		this.state = {
 			streamId: this.props.match.params.id,
@@ -500,6 +505,19 @@ export default class Player extends Component {
       childrenPredictOneDrawerVisible: visibleState
     });
   };
+  
+  showPredictOneResultsFeedbackDrawer() {
+    this.setState({
+      predictOneResultsFeedbackDrawerVisible: true
+    });
+  };
+  
+  onClosePredictOneResultsFeedbackDrawer() {
+    this.setState({
+      predictOneResultsFeedbackDrawerVisible: false
+    });
+  };
+
 
 	// hash function for strings: https://stackoverflow.com/questions/7616461/generate-a-hash-from-string-in-javascript
 	hashStr(message) {
@@ -550,7 +568,28 @@ export default class Player extends Component {
                   {/* this trick works because in Javascript, 'true && expression' evaluates to 'expression' and 'false && expression' evaluates to 'false': https://reactjs.org/docs/conditional-rendering.html */} 
                   {first === true &&
                     <React.Fragment key={this.hashStr(`predict-one-results-parent-header-${fish.scientific_name}`)}>
-                      <h1>{Fmt.capFirstLetter(r_key)}</h1>
+                      <h1>
+                        {Fmt.capFirstLetter(r_key)}
+                        {/* same trick as above */}
+                        {r_idx === 0 &&
+                          <p>
+                            Top choice not correct?  Help us improve our model with your&nbsp;
+                            <a className="feedback-results-link" href="#" onClick={() => this.showPredictOneResultsFeedbackDrawer(fish.scientific_name)}>
+                              feedback!  
+                              <FontAwesomeIcon icon={faReply} />
+                            </a> 
+                            <Drawer
+                              title="Tell us how we can improve"
+                              width={520}
+                              closable={false}
+                              onClose={this.onClosePredictOneResultsFeedbackDrawer}
+                              visible={this.state.predictOneResultsFeedbackDrawerVisible}
+                            >
+                              {this.renderPredictOneResultsFeedbackDrawerContent(ReefLagoonDatabase)}
+                            </Drawer>
+                          </p>
+                        }
+                      </h1>
                       <h2>Match: {Fmt.num(this.state.predictOneResults.top_k_scores[r_idx], {precision: 2, suffix: '%', multiplier: 1e2})}</h2>
                       <div className="divider"></div>
                     </React.Fragment>
@@ -681,6 +720,29 @@ export default class Player extends Component {
       })
     )
   };
+  
+  renderPredictOneResultsFeedbackDrawerContent = (gallery_info) => (
+    Object.keys(gallery_info).map((key, idx) => {
+      let fish = gallery_info[key]
+
+			/* NOTE: there are several 'child' elements returned in lists and React requires these elements to possess unique 
+			 * 'key' attributes.  So, we do our best to provide unique 'key' attributes without collision. */
+      return (
+        <React.Fragment key={this.hashStr(`predict-one-results-feedback-${idx}-${fish.scientific_name}`)}>
+          <h1>{fish.common_name}</h1>
+          <Image src={fish.thumbnail.url} fluid rounded/>
+          <p className="photo-credit">
+            Photo credit: <a href={fish.thumbnail.credit.owner.url}>{fish.thumbnail.credit.owner.name}</a>,&nbsp;  
+            <a href={fish.thumbnail.credit.license.url}>{fish.thumbnail.credit.license.name}</a> via Wikimedia Commons
+          </p>
+          <Button variant="primary" onClick={() => this.showChildFishGalleryDrawer(fish.scientific_name)}>
+            Learn more 
+            <FontAwesomeIcon icon={faAngleRight} />
+          </Button>
+        </React.Fragment>
+      )
+    })
+  );
 
   renderFishGalleryChildrenDrawers = (gallery_info) => (
     Object.keys(gallery_info).map((key, idx) => {

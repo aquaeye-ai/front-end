@@ -236,6 +236,20 @@
     .ant-drawer-body {
       background-color: $denim;
 
+      h1 {
+        p {
+          font-size: 10px;
+
+          a.feedback-results-link {
+            color: $ocean-green;
+
+            &:hover {
+              color: $aquamarine;
+            }
+          }
+        }
+      }
+
       h3 {
         span {
           &.highlight {
