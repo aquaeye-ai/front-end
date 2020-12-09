@@ -12,7 +12,8 @@ import {
   Image,
 	Nav,
 	Modal,
-	Form
+	Form,
+	Toast
 } from 'react-bootstrap';
 import { Drawer } from 'antd';
 import {
@@ -87,7 +88,11 @@ export default withOktaAuth(
 			this.showPredictOneResultsFeedbackDrawer = this.showPredictOneResultsFeedbackDrawer.bind(this);
 			this.onClosePredictOneResultsFeedbackDrawer = this.onClosePredictOneResultsFeedbackDrawer.bind(this);	
 			this.predictOneResultsFeedbackFormSelectChanged = this.predictOneResultsFeedbackFormSelectChanged.bind(this);
+			this.predictOneResultsFeedbackFormImageChanged = this.predictOneResultsFeedbackFormImageChanged.bind(this);
 			this.sendPredictOneFeedback = this.sendPredictOneFeedback.bind(this);
+
+			// toast
+			this.setShowToast = this.setShowToast.bind(this);
 
 			// user
 			this.checkUser = this.checkUser.bind(this);
@@ -126,13 +131,18 @@ export default withOktaAuth(
 				predictOneResultsFeedbackDrawerVisible: false,
 				predictOneResultsImageChoicesVisible: false,
 				predictOneResultsForm: {
-					is_correct: null,
+					is_correct: true,
 					user_choice: null
 				},
 				numClasses: 1,
 				showPredictOneResultsFilters: false,
 				showQuickstartModal: false,
-				userInfo: null
+				userInfo: null,
+				toast: {
+					show: false,
+					header: "",
+					body: "" 
+				}	
 			};
 		}
 
@@ -227,7 +237,9 @@ export default withOktaAuth(
 			if (this.props.authState.isAuthenticated && !this.state.userInfo) {
 				const userInfo = await this.props.authService.getUser();
 				if (this._isMounted) {
-					this.setState({ userInfo });
+					this.setState({ 
+						userInfo: userInfo 
+					});
 				}
 			}
 		}
@@ -351,7 +363,13 @@ export default withOktaAuth(
 
 				this.setState({
 					predictOneResults: data,
-					parentPredictOneDrawerVisible: true
+					parentPredictOneDrawerVisible: true,
+
+					// in case the user hasn't changed anything in the form, these still need reasonable default values
+					predictOneResultsForm: {
+						is_correct: true,
+						user_choice: data.top_k_classes[0]
+					}
 				});
 				
 				const predictOneResultsBtn = document.getElementById('predictOneResults');
@@ -546,12 +564,23 @@ export default withOktaAuth(
 		};
 		
 		onClosePredictOneResultsFeedbackDrawer() {
+			/* We want the predictOneResultsFeedback form to reset after closing it */
 			this.setState({
-				predictOneResultsFeedbackDrawerVisible: false
+				predictOneResultsFeedbackDrawerVisible: false,
+				predictOneResultsImageChoicesVisible: false,
+				predictOneResultsForm: {
+					is_correct: true,
+					user_choice: this.state.predictOneResults.top_k_classes[0]
+				}
 			});
+				
+			const submitBtn = document.getElementById('submitPredictOneResultsFeedback');
+			submitBtn.disabled = false;
+			submitBtn.classList.remove("disabled");
 		};
 
 		predictOneResultsFeedbackFormSelectChanged(e) {
+			/* We want the predictOneResultsFeedback form to reset after closing it */
 			const val = e.target.value;
 			var show = false;
 
@@ -564,41 +593,56 @@ export default withOktaAuth(
 			this.setState({
 				predictOneResultsImageChoicesVisible: show,
 				predictOneResultsForm: {
-					is_correct: show,
-					user_choice: null
+					is_correct: !show,
+					user_choice: this.state.predictOneResults.top_k_classes[0]
 				}
 			});
+		
+			if (show) {	
+				const submitBtn = document.getElementById('submitPredictOneResultsFeedback');
+				submitBtn.disabled = true;
+				submitBtn.classList.add("disabled");
+			} else {
+				const submitBtn = document.getElementById('submitPredictOneResultsFeedback');
+				submitBtn.disabled = false;
+				submitBtn.classList.remove("disabled");
+			}
 		}
 		
 		predictOneResultsFeedbackFormImageChanged(e) {
+			/* We want the predictOneResultsFeedback form to reset after closing it */
+
+			// use currentTarget instead of target since we want the surrounding <a> and not the enclosed <img>
 			const classList = Array.from(e.currentTarget.classList);
 			const imgContainers = document.getElementsByClassName('img-link-container-feedback');
-			
+			const submitBtn = document.getElementById('submitPredictOneResultsFeedback');
+
+			var user_choice = this.state.predictOneResults.top_k_classes[0]; 
+
 			if (!classList.includes("selected")) {
 				for (var i = 0; i < imgContainers.length; i++) {
-					console.log(imgContainers[i].classList);
 					imgContainers[i].classList.remove("selected");
 				}
 				e.currentTarget.classList.add("selected");
+				user_choice = e.currentTarget.getAttribute("data-id");
+			
+				submitBtn.disabled = false;
+				submitBtn.classList.remove("disabled");
 			} else {
 				e.currentTarget.classList.remove("selected");
+
+				submitBtn.disabled = true;
+				submitBtn.classList.add("disabled");
 			}
-			//predictOneResultsBtn.disabled = false;
-			//predictOneResultsBtn.classList.remove("disabled");
 
-			//if (val === "no") {
-			//	show = true;
-			//} else {
-			//	show = false;
-			//}
+			const predictOneResultsFormState = this.state.predictOneResultsForm;
 
-			//this.setState({
-			//	predictOneResultsImageChoicesVisible: show,
-			//	predictOneResultsForm: {
-			//		is_correct: show,
-			//		user_choice: null
-			//	}
-			//});
+			this.setState({
+				predictOneResultsForm: {
+					is_correct: predictOneResultsFormState.is_correct,
+					user_choice: user_choice
+				}
+			});
 		}
 			
 		async sendPredictOneFeedback() {
@@ -632,12 +676,24 @@ export default withOktaAuth(
 			try {
 				const response = await fetch(`${EXPRESS_SERVER_API}/predict/one/feedback`, config);
 				const data = await response.json();
+				
+				const userFirstName = this.state.userInfo.name.split(' ')[0]
 			
-				/* close the drawers */
+				/* close the drawers and show toast */
 				this.setState({
 					predictOneResultsFeedbackDrawerVisible: false,
 					predictOneResultsImageChoicesVisible: false,
-					predictOneResultsForm: this.state.predictOneResultsForm
+
+					// reset the form
+					predictOneResultsForm:  {
+						is_correct: true,
+						user_choice: this.state.predictOneResults.top_k_classes[0]
+					},
+					toast: {
+						show: true,
+						header: "Feedback Submitted",
+						body: `Thank you ${userFirstName}!` 
+					}
 				});
 				
 				//const predictOneResultsBtn = document.getElementById('predictOneResults');
@@ -646,6 +702,16 @@ export default withOktaAuth(
 			} catch (error) {
 				console.log(error);
 			}
+		}
+
+		setShowToast(val) {
+			this.setState({
+				toast: {
+					show: val,
+					header: this.state.toast.header,
+					body: this.state.toast.body	
+				}
+			});
 		}
 
 		// hash function for strings: https://stackoverflow.com/questions/7616461/generate-a-hash-from-string-in-javascript
@@ -703,7 +769,7 @@ export default withOktaAuth(
 													{r_idx === 0 &&
 														<p>
 															Help us improve our model with your&nbsp;
-															<a className="feedback-results-link" href="#" onClick={() => this.showPredictOneResultsFeedbackDrawer()}>
+															<a className="feedback-results-link" href="# " onClick={() => this.showPredictOneResultsFeedbackDrawer()}>
 																feedback!  
 																<FontAwesomeIcon icon={faReply} />
 															</a> 
@@ -717,11 +783,11 @@ export default withOktaAuth(
 																<Form>
 																	<Form.Group controlId="predictOneResultsFeedbackForm">
 																		<Form.Label>Top Result Correct?</Form.Label>
-																		<Form.Control as="select" defaultValue={'yes'} onChange={this.predictOneResultsFeedbackFormSelectChanged} size="sm" custom>
+																		<Form.Control as="select" value={this.state.predictOneResultsForm.is_correct ? "yes" : "no"} onChange={this.predictOneResultsFeedbackFormSelectChanged} size="sm" custom>
 																			<option value="yes">Yes</option>
 																			<option value="no">No</option>
 																		</Form.Control>
-																		<Button variant="primary" onClick={() => this.sendPredictOneFeedback()}>
+																		<Button id="submitPredictOneResultsFeedback" variant="primary" onClick={() => this.sendPredictOneFeedback()}>
 																			Submit 
 																			<FontAwesomeIcon icon={faCheck} />
 																		</Button>
@@ -876,7 +942,7 @@ export default withOktaAuth(
 								<h1>Which Fish Matches Your Selection?</h1>
 							</React.Fragment>
 						}
-						<a className="img-link-container-feedback" href="#" onClick={this.predictOneResultsFeedbackFormImageChanged}>
+						<a data-id={fish.common_group_name} className="img-link-container-feedback" href="# " onClick={this.predictOneResultsFeedbackFormImageChanged}>
 							<h2>{fish.common_name}</h2>
 							<Image src={fish.thumbnail.url} fluid rounded/>
 						</a>
@@ -961,10 +1027,32 @@ export default withOktaAuth(
 								<source type="video/webm" id="videoSource"></source>
 						</video>
 						<canvas id="canvasImg" height="1080" width="1920"></canvas>*/}
+						<Toast 
+							onClose={() => this.setShowToast(false)} 
+							show={this.state.toast.show} 
+							style={{
+								position: 'absolute', 
+								top: 0, 
+								left: 20,
+							}} 
+							delay={3000} 
+							autohide
+						>
+							<Toast.Header>
+								<img
+									src="holder.js/20x20?text=%20"
+									className="rounded mr-2"
+									alt=""
+								/>
+								<strong className="mr-auto">{this.state.toast.header}</strong>
+								{/*<small>now</small>*/}
+							</Toast.Header>
+							<Toast.Body>{this.state.toast.body}</Toast.Body>
+						</Toast>
 						<Container fluid>
 							<Row>
 								<Col>
-									<h1>{ this.state.streamData.name }</h1>
+									<h1 className="stream-name">{ this.state.streamData.name }</h1>
 								</Col>
 							</Row>
 							<Row>

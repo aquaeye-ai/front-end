@@ -99,15 +99,23 @@
 
 .App {
   .body {
+    
+    .toast {
+      z-index: 99;
+    }
 
     h1 {
       text-align: center;
       border-bottom: solid 3px $yale-blue;
-      background-image: url(./assets/water_img_3.jpeg);
-      background-size: contain;
-      background-clip: text;
-      -webkit-background-clip: text;
-      color: transparent;
+      color: $ocean-green;
+
+      &.stream-name {
+        background-image: url(./assets/water_img_3.jpeg);
+        background-size: contain;
+        background-clip: text;
+        -webkit-background-clip: text;
+        color: transparent;
+      }
     }
     
     .container-fluid {
@@ -268,17 +276,18 @@
         }
 
         &.img-link-container-feedback {
+          &.selected {
+            img {
+              opacity: 100%;
+              border: 4px solid $aquamarine;
+            }
+          }
+
           img {
             opacity: 75%;
 
             &:hover {
               opacity: 100%;
-              border: 4px solid $aquamarine;
-            }
-            
-            &.selected {
-              opacity: 100%;
-              border: 4px solid $ocean-green;
             }
           }
         }

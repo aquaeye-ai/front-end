@@ -148,6 +148,8 @@ app.post('/predict/one', async function(req, res) {
 // POST, predict/one/feedback
 app.post('/predict/one/feedback', async function(req, res) {
   try {
+    console.log(req);
+
     // resize image to original size and convert base64 encoded string data to Mat for use with opencv: https://github.com/justadudewhohacks/opencv4nodejs
     base64_data = req.body.frame.data.replace('data:image/jpeg;base64','');
     frame_buffer = Buffer.from(base64_data, 'base64');
@@ -194,6 +196,7 @@ app.post('/predict/one/feedback', async function(req, res) {
 
     //// return model api response
     //res.json(model_response.data);
+    res.json({status: 'success'});
   } catch (error) {
     console.error(error);
   }
