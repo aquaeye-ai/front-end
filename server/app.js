@@ -145,6 +145,60 @@ app.post('/predict/one', async function(req, res) {
   }
 });
 
+// POST, predict/one/feedback
+app.post('/predict/one/feedback', async function(req, res) {
+  try {
+    // resize image to original size and convert base64 encoded string data to Mat for use with opencv: https://github.com/justadudewhohacks/opencv4nodejs
+    base64_data = req.body.frame.data.replace('data:image/jpeg;base64','');
+    frame_buffer = Buffer.from(base64_data, 'base64');
+    cv_frame = cv.imdecode(frame_buffer);
+		cv_frame = cv_frame.resize(1080, 1920); // resize to original frame size (front-end alters size to fit page)
+  
+    // scale coordinates of selection to match original 1920x1080 frame instead of downsized frame in FE
+    // round to nearest integer
+    const frame_reduction_factor = req.body.frame.height / 1080;
+    rect_coords_adjusted = {
+      x: Math.round(req.body.rect.x * (1 / frame_reduction_factor)),
+      y: Math.round(req.body.rect.y * (1 / frame_reduction_factor)),
+      h: Math.round(req.body.rect.h * (1 / frame_reduction_factor)),
+      w: Math.round(req.body.rect.w * (1 / frame_reduction_factor))
+    };
+
+    // Need to switch start and end coordinates of rect in case the h or w is negative.  
+    // This can happen if the rect is drawing from right-to-left instead of left-to-right.
+    if (rect_coords_adjusted.w < 0) {
+      rect_coords_adjusted.x = rect_coords_adjusted.x + rect_coords_adjusted.w;
+      rect_coords_adjusted.w = Math.abs(rect_coords_adjusted.w);
+    } 
+    if (rect_coords_adjusted.h < 0) {
+      rect_coords_adjusted.y = rect_coords_adjusted.y + rect_coords_adjusted.h;
+      rect_coords_adjusted.h = Math.abs(rect_coords_adjusted.h);
+    } 
+
+    // grab selection based on rect from frame
+    selection_img = cv_frame.getRegion(new cv.Rect(rect_coords_adjusted.x, rect_coords_adjusted.y, rect_coords_adjusted.w, rect_coords_adjusted.h));
+    
+    //// base64 encode to transmit over network
+		//const selection_enc = cv.imencode('.jpg', selection_img).toString('base64'); 
+
+    //// send request to model api
+    //const json_payload = {
+    //  K: req.body.frame.K, 
+    //  id: req.body.frame.id, 
+    //  height: rect_coords_adjusted.h, 
+    //  width: rect_coords_adjusted.w, 
+    //  depth: req.body.frame.depth,
+    //  image: selection_enc 
+    //};
+    //const model_response = await axios.post(`http://${MODEL_SERVER_IP}:${process.env.REACT_APP_MODEL_SERVER_PORT}/predict/one`, json_payload);
+
+    //// return model api response
+    //res.json(model_response.data);
+  } catch (error) {
+    console.error(error);
+  }
+});
+
 // GET, simple route for testing model api
 app.get('/quote', async function(req, res) {
   try {
