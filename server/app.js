@@ -42,6 +42,17 @@ process.on('unhandledRejection', (reason, p) => {
   process.exit(1)
 });
 
+// create directories to hold user feedback
+const feedback_dir = "./feedback";
+const predict_one_feedback_dir = path.join(feedback_dir, "predict-one");
+
+if (!fs.existsSync(feedback_dir)) {
+  fs.mkdirSync(feedback_dir);
+}
+if (!fs.existsSync(predict_one_feedback_dir)) {
+  fs.mkdirSync(predict_one_feedback_dir);
+}
+
 app.use(express.json({
   limit: "50mb"
 })); // to support JSON-encoded bodies, see: https://stackoverflow.com/questions/5710358/how-to-retrieve-post-query-parameters
@@ -154,8 +165,6 @@ app.post('/predict/one', async function(req, res) {
 // POST, predict/one/feedback
 app.post('/predict/one/feedback', async function(req, res) {
   try {
-    console.log(req);
-
     // resize image to original size and convert base64 encoded string data to Mat for use with opencv: https://github.com/justadudewhohacks/opencv4nodejs
     base64_data = req.body.frame.data.replace('data:image/jpeg;base64','');
     frame_buffer = Buffer.from(base64_data, 'base64');
@@ -185,23 +194,33 @@ app.post('/predict/one/feedback', async function(req, res) {
 
     // grab selection based on rect from frame
     selection_img = cv_frame.getRegion(new cv.Rect(rect_coords_adjusted.x, rect_coords_adjusted.y, rect_coords_adjusted.w, rect_coords_adjusted.h));
+
+    // save user feedback and image selection
+    user_info = req.body.user;
+    feedback = req.body.feedback;
+
+    img_out_path = path.join(predict_one_feedback_dir, `./${req.body.frame.timestamp}.jpg`);
+    log_out_path = path.join(predict_one_feedback_dir, `./${req.body.frame.timestamp}.txt`);
+
+    feedback_str = `name: ${user_info.name}\n` + 
+      `email: ${user_info.email}\n` + 
+      `model_is_correct: ${feedback.model_is_correct}\n` + 
+      `model_choice: ${feedback.model_choice}\n` +
+      `user_choice: ${feedback.user_choice}`;
+
+    fs.writeFile(log_out_path, feedback_str, (err) => {
+      if (err) {
+        return console.log(err);
+      }
+      console.log("predict/one/feedback:user response saved");
+    });
+    cv.imwriteAsync(img_out_path, selection_img, (err) => {
+      if (err) {
+        return console.log(err);
+      }
+      console.log("predict/one/feedback:user image saved");
+    });
     
-    //// base64 encode to transmit over network
-		//const selection_enc = cv.imencode('.jpg', selection_img).toString('base64'); 
-
-    //// send request to model api
-    //const json_payload = {
-    //  K: req.body.frame.K, 
-    //  id: req.body.frame.id, 
-    //  height: rect_coords_adjusted.h, 
-    //  width: rect_coords_adjusted.w, 
-    //  depth: req.body.frame.depth,
-    //  image: selection_enc 
-    //};
-    //const model_response = await axios.post(`http://${MODEL_SERVER_IP}:${process.env.REACT_APP_MODEL_SERVER_PORT}/predict/one`, json_payload);
-
-    //// return model api response
-    //res.json(model_response.data);
     res.json({status: 'success'});
   } catch (error) {
     console.error(error);

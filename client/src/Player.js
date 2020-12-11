@@ -131,8 +131,9 @@ export default withOktaAuth(
 				predictOneResultsFeedbackDrawerVisible: false,
 				predictOneResultsImageChoicesVisible: false,
 				predictOneResultsForm: {
-					is_correct: true,
-					user_choice: null
+					model_is_correct: true,
+					user_choice: null,
+					model_choice: null 
 				},
 				numClasses: 1,
 				showPredictOneResultsFilters: false,
@@ -367,8 +368,9 @@ export default withOktaAuth(
 
 					// in case the user hasn't changed anything in the form, these still need reasonable default values
 					predictOneResultsForm: {
-						is_correct: true,
-						user_choice: data.top_k_classes[0]
+						model_is_correct: true,
+						user_choice: data.top_k_classes[0],
+					  model_choice: this.state.predictOneResults.top_k_classes[0]
 					}
 				});
 				
@@ -569,8 +571,9 @@ export default withOktaAuth(
 				predictOneResultsFeedbackDrawerVisible: false,
 				predictOneResultsImageChoicesVisible: false,
 				predictOneResultsForm: {
-					is_correct: true,
-					user_choice: this.state.predictOneResults.top_k_classes[0]
+					model_is_correct: true,
+					user_choice: this.state.predictOneResults.top_k_classes[0],
+					model_choice: this.state.predictOneResults.top_k_classes[0]
 				}
 			});
 				
@@ -593,7 +596,7 @@ export default withOktaAuth(
 			this.setState({
 				predictOneResultsImageChoicesVisible: show,
 				predictOneResultsForm: {
-					is_correct: !show,
+					model_is_correct: !show,
 					user_choice: this.state.predictOneResults.top_k_classes[0]
 				}
 			});
@@ -639,8 +642,9 @@ export default withOktaAuth(
 
 			this.setState({
 				predictOneResultsForm: {
-					is_correct: predictOneResultsFormState.is_correct,
-					user_choice: user_choice
+					model_is_correct: predictOneResultsFormState.model_is_correct,
+					user_choice: user_choice,
+					model_choice: this.state.predictOneResults.top_k_classes[0]
 				}
 			});
 		}
@@ -686,8 +690,9 @@ export default withOktaAuth(
 
 					// reset the form
 					predictOneResultsForm:  {
-						is_correct: true,
-						user_choice: this.state.predictOneResults.top_k_classes[0]
+						model_is_correct: true,
+						user_choice: this.state.predictOneResults.top_k_classes[0],
+					  model_choice: this.state.predictOneResults.top_k_classes[0]
 					},
 					toast: {
 						show: true,
@@ -783,7 +788,7 @@ export default withOktaAuth(
 																<Form>
 																	<Form.Group controlId="predictOneResultsFeedbackForm">
 																		<Form.Label>Top Result Correct?</Form.Label>
-																		<Form.Control as="select" value={this.state.predictOneResultsForm.is_correct ? "yes" : "no"} onChange={this.predictOneResultsFeedbackFormSelectChanged} size="sm" custom>
+																		<Form.Control as="select" value={this.state.predictOneResultsForm.model_is_correct ? "yes" : "no"} onChange={this.predictOneResultsFeedbackFormSelectChanged} size="sm" custom>
 																			<option value="yes">Yes</option>
 																			<option value="no">No</option>
 																		</Form.Control>
