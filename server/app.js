@@ -36,6 +36,12 @@ const youtube_url = "https://www.youtube.com/watch?v=1nWGig6pQ7Q&feature=emb_tit
 
 const MODEL_SERVER_IP = process.env.REACT_APP_HOST_ENV === "production" ? process.env.REACT_APP_MODEL_SERVER_IP_PROD : process.env.REACT_APP_MODEL_SERVER_IP_DEV; 
 
+// most useful for handling when youtube-dl fails
+process.on('unhandledRejection', (reason, p) => {
+  console.error('Unhandled Rejection at:', p, 'reason:', reason)
+  process.exit(1)
+});
+
 app.use(express.json({
   limit: "50mb"
 })); // to support JSON-encoded bodies, see: https://stackoverflow.com/questions/5710358/how-to-retrieve-post-query-parameters
@@ -218,6 +224,7 @@ const io = require('socket.io')(server);
 /* 
  * Extract the HLS link for the youtube livestream so that we can intercept it.	
  * We need to extract this automatically since the hls link will expire after few hours. 
+ * NOTE: if this throws an error on startup on a consistent basis, then likely we need update youtube-dl.  Can try `npm install youtube-dl` from /share/front-end/server/
 */
 ydl.exec(youtube_url, ['--format=96', '-g'], {}, (err, output) => {
 	if (err) throw err
@@ -259,7 +266,7 @@ ydl.exec(youtube_url, ['--format=96', '-g'], {}, (err, output) => {
     } 
 	}, 1000 / FPS)
 });
-
+  
 /* 
  * Ports:
  * 	React Client: 80 
