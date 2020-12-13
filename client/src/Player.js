@@ -44,8 +44,8 @@ import UnknownFish from './UnknownFish';
 import Fmt from './Fmt';
 import './Player.scss';
 
-let HTTP_SERVER_API = process.env.REACT_APP_HOST_ENV === 'production' ? process.env.REACT_APP_HTTP_SERVER_API_PROD : process.env.REACT_APP_HTTP_SERVER_API_DEV
-let EXPRESS_SERVER_API = process.env.REACT_APP_HOST_ENV === 'production' ? process.env.REACT_APP_EXPRESS_SERVER_API_PROD : process.env.REACT_APP_EXPRESS_SERVER_API_DEV
+let HTTP_SERVER_API = process.env.REACT_APP_HOST_ENV === 'PROD' ? process.env.REACT_APP_HTTP_SERVER_API_PROD : process.env.REACT_APP_HTTP_SERVER_API_DEV
+let EXPRESS_SERVER_API = process.env.REACT_APP_HOST_ENV === 'PROD' ? process.env.REACT_APP_EXPRESS_SERVER_API_PROD : process.env.REACT_APP_EXPRESS_SERVER_API_DEV
 
 let socket = io(HTTP_SERVER_API)
 	

@@ -34,7 +34,7 @@ const width = 1920;
 const FPS = 30;
 const youtube_url = "https://www.youtube.com/watch?v=1nWGig6pQ7Q&feature=emb_title&ab_channel=CaliforniaAcademyofSciences";
 
-const MODEL_SERVER_IP = process.env.REACT_APP_HOST_ENV === "production" ? process.env.REACT_APP_MODEL_SERVER_IP_PROD : process.env.REACT_APP_MODEL_SERVER_IP_DEV; 
+const MODEL_SERVER_IP = process.env.REACT_APP_HOST_ENV === "PROD" ? process.env.REACT_APP_MODEL_SERVER_IP_PROD : process.env.REACT_APP_MODEL_SERVER_IP_DEV; 
 
 // most useful for handling when youtube-dl fails
 process.on('unhandledRejection', (reason, p) => {
