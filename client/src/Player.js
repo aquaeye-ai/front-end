@@ -680,6 +680,7 @@ export default withOktaAuth(
 			try {
 				const response = await fetch(`${EXPRESS_SERVER_API}/predict/one/feedback`, config);
 				const data = await response.json();
+				console.log(data);
 				
 				const userFirstName = this.state.userInfo.name.split(' ')[0]
 			

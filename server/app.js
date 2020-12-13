@@ -34,8 +34,6 @@ const width = 1920;
 const FPS = 30;
 const youtube_url = "https://www.youtube.com/watch?v=1nWGig6pQ7Q&feature=emb_title&ab_channel=CaliforniaAcademyofSciences";
 
-const MODEL_SERVER_IP = process.env.REACT_APP_HOST_ENV === "PROD" ? process.env.REACT_APP_MODEL_SERVER_IP_PROD : process.env.REACT_APP_MODEL_SERVER_IP_DEV; 
-
 // most useful for handling when youtube-dl fails
 process.on('unhandledRejection', (reason, p) => {
   console.error('Unhandled Rejection at:', p, 'reason:', reason)
@@ -101,7 +99,7 @@ app.get('/stream/:id/poster', function(req, res) {
 // GET, /predict/num-classes 
 app.get('/predict/num-classes', async function(req, res) {
   try {
-    const response = await axios.get(`http://${MODEL_SERVER_IP}:${process.env.REACT_APP_MODEL_SERVER_PORT}/num-classes`);
+    const response = await axios.get(`http://${process.env.REACT_APP_MODEL_SERVER_IP}:${process.env.REACT_APP_MODEL_SERVER_PORT}/num-classes`);
     res.json(response.data);
   } catch (error) {
     console.error(error);
@@ -153,7 +151,7 @@ app.post('/predict/one', async function(req, res) {
       depth: req.body.frame.depth,
       image: selection_enc 
     };
-    const model_response = await axios.post(`http://${MODEL_SERVER_IP}:${process.env.REACT_APP_MODEL_SERVER_PORT}/predict/one`, json_payload);
+    const model_response = await axios.post(`http://${process.env.REACT_APP_MODEL_SERVER_IP}:${process.env.REACT_APP_MODEL_SERVER_PORT}/predict/one`, json_payload);
 
     // return model api response
     res.json(model_response.data);
@@ -230,7 +228,7 @@ app.post('/predict/one/feedback', async function(req, res) {
 // GET, simple route for testing model api
 app.get('/quote', async function(req, res) {
   try {
-    const response = await axios.get(`http://${MODEL_SERVER_IP}:${process.env.REACT_APP_MODEL_SERVER_PORT}/quote`);
+    const response = await axios.get(`http://${process.env.REACT_APP_MODEL_SERVER_IP}:${process.env.REACT_APP_MODEL_SERVER_PORT}/quote`);
     res.json(response['data']);
   } catch (error) {
     console.error(error);
