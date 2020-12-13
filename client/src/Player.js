@@ -1057,7 +1057,7 @@ export default withOktaAuth(
 						<Container fluid>
 							<Row>
 								<Col>
-									<h1 className="stream-name">{ this.state.streamData.name }</h1>
+									<h1 className="stream-name">{this.state.streamData.name}</h1>
 								</Col>
 							</Row>
 							<Row>
@@ -1247,19 +1247,19 @@ class QuickstartModal extends Component {
 	
 	renderMouseTooltip = (props) => (
     <Tooltip id="mouse-tooltip" {...props}>
-   		Use mouse  
+   		While pressing left-click on mouse, move cursor over livestream to define bounding box 
     </Tooltip>
 	);
 	
 	renderMousePointerTooltip = (props) => (
     <Tooltip id="mouse-pointer-tooltip" {...props}>
-   		Left click with mouse on livestream, screen will pause  
+      Move cursor to point of interest in livestream 
     </Tooltip>
 	);
 	
 	renderBoundingBoxTooltip = (props) => (
     <Tooltip id="bounding-box-tooltip" {...props}>
-   		Left-click and drag using mouse to draw bounding box over one fish of interest 
+      Bounding box will expand from initial point-of-click on livestream
     </Tooltip>
 	);
 	
@@ -1291,7 +1291,7 @@ class QuickstartModal extends Component {
 
 	renderPredictOneResultsBtnTooltip = (props) => (
     <Tooltip id="predict-one-results-btn-tooltip" {...props}>
-			You can revisit your last predict-one results by visiting this button in the left menu	
+			You can revisit your last predict-one results by left-clicking this button in the left menu	
     </Tooltip>
 	);
 
@@ -1326,9 +1326,9 @@ class QuickstartModal extends Component {
 									<OverlayTrigger
 										placement="bottom"
 										delay={{ show: 250, hide: 400 }}
-										overlay={this.renderMouseTooltip}
+										overlay={this.renderMousePointerTooltip}
 									>
-										<FontAwesomeIcon icon={faMouse} size="3x" className="space-l-r has-hover" />
+										<FontAwesomeIcon icon={faMousePointer} size="3x" className="space-l-r has-hover" />
 									</OverlayTrigger>
 
 									<FontAwesomeIcon icon={faArrowRight} className="space-l-r" />
@@ -1336,9 +1336,9 @@ class QuickstartModal extends Component {
 									<OverlayTrigger
 										placement="bottom"
 										delay={{ show: 250, hide: 400 }}
-										overlay={this.renderMousePointerTooltip}
+										overlay={this.renderMouseTooltip}
 									>
-										<FontAwesomeIcon icon={faMousePointer} size="3x" className="space-l-r has-hover" />
+										<FontAwesomeIcon icon={faMouse} size="3x" className="space-l-r has-hover" />
 									</OverlayTrigger>
 
 									<FontAwesomeIcon icon={faArrowRight} className="space-l-r" />
@@ -1374,16 +1374,6 @@ class QuickstartModal extends Component {
 							</Col>
 							<Col xs={10}>
 								<div className="icon-container">
-									<OverlayTrigger
-										placement="bottom"
-										delay={{ show: 250, hide: 400 }}
-										overlay={this.renderMouseTooltip}
-									>
-										<FontAwesomeIcon icon={faMouse} size="3x" className="space-l-r has-hover" />
-									</OverlayTrigger>
-
-									<FontAwesomeIcon icon={faArrowRight} className="space-l-r" />
-									
 									<OverlayTrigger
 										placement="bottom"
 										delay={{ show: 250, hide: 400 }}
