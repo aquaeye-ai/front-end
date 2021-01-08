@@ -21,7 +21,6 @@ export default class Home extends Component {
       const EXPRESS_SERVER_API = process.env.REACT_APP_HOST_ENV === "PROD" ? process.env.REACT_APP_EXPRESS_SERVER_API_PROD : process.env.REACT_APP_EXPRESS_SERVER_API_DEV;
       const response = await fetch(`${EXPRESS_SERVER_API}/streams`);
       const data = await response.json();
-      console.log(data);
       this.setState({ streams: [...data] });
     } catch (error) {
       console.log(error);

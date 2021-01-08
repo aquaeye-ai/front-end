@@ -166,7 +166,7 @@ export default withOktaAuth(
 
 				// we need to reconnect each time we mount the component since we disconnect on 'componentWillUnmount' below
 				socket.connect(HTTP_SERVER_API);
-				socket.on('image', image => {
+				socket.on(`stream-${stream_data.id}-image`, image => {
 					const imageElm = document.getElementById('streamImage');
 					imageElm.src = `data:image/jpeg;base64,${image}`;
 					
@@ -307,7 +307,7 @@ export default withOktaAuth(
 		
 		play() {
 			try {
-				socket.on('image', image => {
+				socket.on(`stream-${this.state.streamId}-image`, image => {
 					const imageElm = document.getElementById('streamImage');
 					imageElm.src = `data:image/jpeg;base64,${image}`;
 				});
@@ -325,7 +325,7 @@ export default withOktaAuth(
 
 		pause() {
 			try {
-				socket.off('image');
+				socket.off(`stream-${this.state.streamId}-image`);
 			
 				const playBtn = document.getElementById('play');
 				playBtn.disabled = false;
