@@ -263,6 +263,7 @@ const io = require('socket.io')(server);
 /*
  * Create streams in child processes.
  * It was found that multiple streams in a process would cause the cpu core that the process runs on, to be overburdened.  
+ * This was mostly due to encoding and transmission of each frame.
  * This caused the stream to stutter and run slowly.
  * By running each stream in its own process, the streams run more smoothly.
  */
@@ -295,14 +296,11 @@ process.on('exit', function() {
   
 /* 
  * Ports:
- * 	React Client: 80 
+ * 	React Client: 80 (PROD) or 3000 (DEV) 
  * 	Express App: 4000
- * 	HTTP Server: 5000
+ * 	HTTP Servers (streams): start at 5000
  * 	Model API Server: 8000
 */
-//server.listen(process.env.REACT_APP_HTTP_SERVER_PORT, process.env.REACT_APP_SERVER_IP, () => {
-//	console.log(`HTTP Server listening on ${process.env.REACT_APP_SERVER_IP}:${process.env.REACT_APP_HTTP_SERVER_PORT}!`);
-//});
 app.listen(process.env.REACT_APP_EXPRESS_SERVER_PORT, process.env.REACT_APP_SERVER_IP, () => {
 	console.log(`Express App listening on port ${process.env.REACT_APP_SERVER_IP}:${process.env.REACT_APP_EXPRESS_SERVER_PORT}!`);
 });

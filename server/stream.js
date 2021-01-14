@@ -90,7 +90,12 @@ process.on('message', (message) => {
               stream.vCap.reset();
               stream.frame = stream.vCap.read();
             } else {
-              stream.frameEncoded = cv.imencode('.jpg', stream.frame)//.toString('base64');
+              /* 
+               * Encoding and emition are expensive in processing power and the reasons why we must move each stream to its own 
+               * process.
+               */
+              stream.frameEncoded = cv.imencode('.jpg', stream.frame).toString('base64');
+              //stream.frameEncoded = cv.imencode('.jpg', stream.frame);
               
               // emit frame
               io.emit(`stream-${stream.id}-image`, stream.frameEncoded);
@@ -122,11 +127,15 @@ process.on('message', (message) => {
             stream.vCap.reset();
             stream.frame = stream.vCap.read();
           } else {
-            stream.frameEncoded = cv.imencode('.jpg', stream.frame);//.toString('base64');
+            /* 
+             * Encoding and emition are expensive in processing power and the reasons why we must move each stream to its own 
+             * process.
+             */
+            stream.frameEncoded = cv.imencode('.jpg', stream.frame).toString('base64');
+            //stream.frameEncoded = cv.imencode('.jpg', stream.frame);
             
             // emit frame
             io.emit(`stream-${stream.id}-image`, stream.frameEncoded);
-            //io.emit(`stream-${stream.id}-image`, stream.frame.getData());
           }
         } catch (error) {
           console.log(error);
@@ -136,7 +145,7 @@ process.on('message', (message) => {
       
     /* 
      * Ports:
-     * 	HTTP Server: 5001
+     * 	HTTP Server: port defined by passed-in stream object
     */
     server.listen(stream.port, process.env.REACT_APP_SERVER_IP, () => {
       console.log(`HTTP Server listening on ${process.env.REACT_APP_SERVER_IP}:${stream.port}!`);

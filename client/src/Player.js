@@ -44,10 +44,10 @@ import UnknownFish from './UnknownFish';
 import Fmt from './Fmt';
 import './Player.scss';
 
-let HTTP_SERVER_API = process.env.REACT_APP_HOST_ENV === 'PROD' ? process.env.REACT_APP_HTTP_SERVER_API_PROD : process.env.REACT_APP_HTTP_SERVER_API_DEV
+let HTTP_SERVER_STREAM_HOST = process.env.REACT_APP_HOST_ENV === 'PROD' ? process.env.REACT_APP_HTTP_SERVER_STREAM_HOST_PROD : process.env.REACT_APP_HTTP_SERVER_STREAM_HOST_DEV
 let EXPRESS_SERVER_API = process.env.REACT_APP_HOST_ENV === 'PROD' ? process.env.REACT_APP_EXPRESS_SERVER_API_PROD : process.env.REACT_APP_EXPRESS_SERVER_API_DEV
 
-let socket = io(HTTP_SERVER_API)
+let socket = null
 	
 export default withOktaAuth(
 	class Player extends Component {
@@ -157,23 +157,25 @@ export default withOktaAuth(
 				const stream_data = await stream_data_res.json();
 				this.setState({ streamData: stream_data });
 
-				//const imageDecoded = new Image();
-				//const canvasElm = document.getElementById('canvasImg');
-				//const ctx = canvasElm.getContext("2d");
-				//imageDecoded.onload = () => {
-				//	ctx.drawImage(imageDecoded, 0, 0);
-				//};
-
 				// we need to reconnect each time we mount the component since we disconnect on 'componentWillUnmount' below
-				socket.connect(HTTP_SERVER_API);
+        socket = io(`${HTTP_SERVER_STREAM_HOST}:${stream_data.port}`)
+        socket.connect(`${HTTP_SERVER_STREAM_HOST}:${stream_data.port}`);
 				socket.on(`stream-${stream_data.id}-image`, image => {
+          /*
+           * We stick with this approach for simplicity, instead of approach below.
+           */
 					const imageElm = document.getElementById('streamImage');
 					imageElm.src = `data:image/jpeg;base64,${image}`;
-					
-					//const videoElm = document.getElementById('videoSource');
-					//videoElm.src = `data:image/jpeg;base64,${image}`;
-					
-					//imageDecoded.src = `data:image/jpeg;base64,${image}`;
+
+          /*
+           * This approach doesn't require the server to convert its encoded jpg to base64 string before sending, so potentially
+           * saves some work on the server side (maybe faster than above approach)
+           */
+          // use .reduce() to avoid 'maximum callstack error': https://stackoverflow.com/questions/38432611/converting-arraybuffer-to-string-maximum-call-stack-size-exceeded
+          //const base64String = btoa(new Uint8Array(image).reduce(function (data, byte) {
+          //  return data + String.fromCharCode(byte); 
+          //}, ''));
+					//imageElm.src = `data:image/jpeg;base64,${base64String}`;
 				});
 				
 				const num_classes_req_settings = {
@@ -308,8 +310,21 @@ export default withOktaAuth(
 		play() {
 			try {
 				socket.on(`stream-${this.state.streamId}-image`, image => {
+          /*
+           * We stick with this approach for simplicity, instead of approach below.
+           */
 					const imageElm = document.getElementById('streamImage');
 					imageElm.src = `data:image/jpeg;base64,${image}`;
+
+          /*
+           * This approach doesn't require the server to convert its encoded jpg to base64 string before sending, so potentially
+           * saves some work on the server side (maybe faster than above approach)
+           */
+          // use .reduce() to avoid 'maximum callstack error': https://stackoverflow.com/questions/38432611/converting-arraybuffer-to-string-maximum-call-stack-size-exceeded
+          //const base64String = btoa(new Uint8Array(image).reduce(function (data, byte) {
+          //  return data + String.fromCharCode(byte); 
+          //}, ''));
+					//imageElm.src = `data:image/jpeg;base64,${base64String}`;
 				});
 				
 				this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
