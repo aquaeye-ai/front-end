@@ -14,25 +14,18 @@ const cors = require('cors');
 const ydl = require('youtube-dl');
 const _ = require('lodash');
 const axios = require('axios').default;
+const { fork } = require('child_process');
 
-const streams = [
-    {
-        id: 0,
-        poster: '/stream/0/poster',
-        name: 'Reef Lagoon'
-    }
-];
+var streams = require('./streams.json');
 
 // youtube-dl variables
 var hls_link = null;
-var wCap = null;
-var frame = null;
-var frameEncoded = null;
-var frameCount = 0
 const height = 1080;
 const width = 1920;
 const FPS = 30;
-const youtube_url = "https://www.youtube.com/watch?v=1nWGig6pQ7Q&feature=emb_title&ab_channel=CaliforniaAcademyofSciences";
+
+// socket.io is slow for multiple streams at same FPS, so we slow the second stream down TODO: fix this problem
+const FPS_reduction = 1; 
 
 // most useful for handling when youtube-dl fails
 process.on('unhandledRejection', (reason, p) => {
@@ -40,7 +33,31 @@ process.on('unhandledRejection', (reason, p) => {
   process.exit(1)
 });
 
+// initialize video file streams
+// this saves time when requesting thumbnails for the streams
+console.log('Initializing streams for thumbnails');
+_.each(streams, function (stream) {
+  if (stream.type === "stream") {
+    ydl.exec(stream.url, ['--format=96', '-g'], {}, (err, output) => {
+      if (err) throw err
+
+      console.log('\nyoutube-dl finished HLS link extraction:');
+      console.log(output.join('\n'));
+      console.log('\n');
+      hls_link = output[0];
+      stream.vCap = new cv.VideoCapture(hls_link);//0);//"/home/nightrider/Videos/mashup.mp4");
+      stream.vCap.set(cv.CAP_PROP_FRAME_WIDTH, width);
+      stream.vCap.set(cv.CAP_PROP_FRAME_HEIGHT, height);
+    });
+  } else if (stream.type === "file") {
+    stream.vCap = new cv.VideoCapture(__dirname + stream.url);
+    stream.vCap.set(cv.CAP_PROP_FRAME_WIDTH, width);
+    stream.vCap.set(cv.CAP_PROP_FRAME_HEIGHT, height);
+  }
+});
+
 // create directories to hold user feedback
+console.log('Initializing feedback directories');
 const feedback_dir = "./feedback";
 const predict_one_feedback_dir = path.join(feedback_dir, "predict-one");
 
@@ -66,15 +83,20 @@ app.use(cors()); // to support CORS
 
 // GET, /streams
 app.get('/streams', function(req, res) {
+  var frame = null;
+  var frameEnc = null;
 	_.each(streams, function (stream) {
-		frame = wCap.read();
-    console.log(frame);
-		//cv.imshow('thumbnail', frame);
-		//cv.waitKey(0);
-		const frameMat = new cv.Mat(frame, cv.CV_8UC3);
-		frame = frame.resize(1080, 1920);
-		const frameEnc = cv.imencode('.jpg', frame).toString('base64');
-		streams[stream.id].poster = frameEnc
+    if (stream.type === "stream") {
+      frame = stream.vCap.read();
+      frame = frame.resize(1080, 1920);
+      frameEnc = cv.imencode('.jpg', frame).toString('base64');
+      streams[stream.id].poster = frameEnc;
+    } else if (stream.type === "file") {
+      frame = stream.vCap.read();
+      frame = frame.resize(1080, 1920);
+      frameEnc = cv.imencode('.jpg', frame).toString('base64');
+      streams[stream.id].poster = frameEnc;
+    }
 	});
 	res.json(streams);
 });
@@ -85,16 +107,16 @@ app.get('/stream/:id/data', function(req, res) {
   res.json(streams[id]);
 });
 
-// GET, /stream/:id/poster
-app.get('/stream/:id/poster', function(req, res) {
-  //thumbsupply.generateThumbnail(`assets/${req.params.id}.mp4`)
-  //.then(thumb => res.sendFile(thumb))
-  const frame = wCap.read();
-  const frameEnc = cv.imencode('.jpg', frame).toString('base64');
-  //cv.imshow('thumbnail', frame);
-  //cv.waitKey(0);
-  res.send(`data:image/jpeg;base64,${frameEnc}`);
-});
+//// GET, /stream/:id/poster
+//app.get('/stream/:id/poster', function(req, res) {
+//  //thumbsupply.generateThumbnail(`assets/${req.params.id}.mp4`)
+//  //.then(thumb => res.sendFile(thumb))
+//  const frame = vCap.read();
+//  const frameEnc = cv.imencode('.jpg', frame).toString('base64');
+//  //cv.imshow('thumbnail', frame);
+//  //cv.waitKey(0);
+//  res.send(`data:image/jpeg;base64,${frameEnc}`);
+//});
 
 // GET, /predict/num-classes 
 app.get('/predict/num-classes', async function(req, res) {
@@ -238,62 +260,47 @@ app.get('/quote', async function(req, res) {
 const server = http.createServer(app);
 const io = require('socket.io')(server);
 
-/* 
- * Extract the HLS link for the youtube livestream so that we can intercept it.	
- * We need to extract this automatically since the hls link will expire after few hours. 
- * NOTE: if this throws an error on startup on a consistent basis, then likely we need update youtube-dl.  Can try `npm install youtube-dl` from /share/front-end/server/
-*/
-ydl.exec(youtube_url, ['--format=96', '-g'], {}, (err, output) => {
-	if (err) throw err
+/*
+ * Create streams in child processes.
+ * It was found that multiple streams in a process would cause the cpu core that the process runs on, to be overburdened.  
+ * This was mostly due to encoding and transmission of each frame.
+ * This caused the stream to stutter and run slowly.
+ * By running each stream in its own process, the streams run more smoothly.
+ */
+console.log('Initializing streams in child processes');
+var children = [];
+_.each(streams, function (stream) {
+  const child = fork(__dirname + '/stream');
+  children.push(child);
 
-	console.log('\nyoutube-dl finished HLS link extraction:');
-	console.log(output.join('\n'));
-	console.log('\n');
-	hls_link = output[0];
-	wCap = new cv.VideoCapture(hls_link);//0);//"/home/nightrider/Videos/mashup.mp4");
-	wCap.set(cv.CAP_PROP_FRAME_WIDTH, width);
-	wCap.set(cv.CAP_PROP_FRAME_HEIGHT, height);
+  child.on('message', (message) => {
+    console.log('Received message from child process: ' + message);
+  });
 
-	// emit captured livestream video frame-by-frame and emit each frame at specified interval using socket.io 
-	setInterval(() => {
-    try {
-      // read raw frame
-      frame = wCap.read();
-      frameCount += 1;
-      
-      // encode frame for efficient transfer to clients
-      // 
-      // NOTE: This first 'if' condition is a jank fix to a problem I dont' fully understand: we reset the capture every 140 
-      // frames because otherwise the capture errors out and stalls for several seconds approximately every 148th frame 
-      // (not exactly 148 it seems, so that's why we modulo 140).  frame.empty sets to true when this stall behavior happens.  
-      // Originally, we would only check for that condition before resetting the capture.  Even though the capture behavior can 
-      // be reset if frame.empty is detected, the stalling causes a noticeably long delay.  This is why we also rely on 
-      // modulo'ing every 140 frames to preempt the stall behavior.  The video stream is noticeably smoother using the approach.
-      if (frameCount % 140 == 0 || frame.empty) { 
-        wCap.reset();
-        frame = wCap.read();
-      } else {
-        frameEncoded = cv.imencode('.jpg', frame).toString('base64');
-        
-        // emit frame
-        io.emit('image', frameEncoded);
-      }
-    } catch (error) {
-      console.log(error);
-    } 
-	}, 1000 / FPS)
+  message = {
+    cmd: 'START',
+    stream: stream
+  }
+  child.send(message);
+});
+
+/*
+ * Kill all child processes on exit
+ */
+process.on('exit', function() {
+  console.log('killing', children.length, 'child processes');
+  children.forEach(function(child) {
+    child.kill();
+  });
 });
   
 /* 
  * Ports:
- * 	React Client: 80 
+ * 	React Client: 80 (PROD) or 3000 (DEV) 
  * 	Express App: 4000
- * 	HTTP Server: 5000
+ * 	HTTP Servers (streams): start at 5000
  * 	Model API Server: 8000
 */
-server.listen(process.env.REACT_APP_HTTP_SERVER_PORT, process.env.REACT_APP_SERVER_IP, () => {
-	console.log(`HTTP Server listening on ${process.env.REACT_APP_SERVER_IP}:${process.env.REACT_APP_HTTP_SERVER_PORT}!`);
-});
 app.listen(process.env.REACT_APP_EXPRESS_SERVER_PORT, process.env.REACT_APP_SERVER_IP, () => {
 	console.log(`Express App listening on port ${process.env.REACT_APP_SERVER_IP}:${process.env.REACT_APP_EXPRESS_SERVER_PORT}!`);
 });

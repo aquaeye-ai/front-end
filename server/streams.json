@@ -1,0 +1,26 @@
+[    
+    {
+        "id": 0,
+        "poster": "/stream/0/poster",
+        "name": "Reef Lagoon (Live)",
+        "url": "https://www.youtube.com/watch?v=1nWGig6pQ7Q&feature=emb_title&ab_channel=CaliforniaAcademyofSciences",
+        "type": "stream",
+        "vCap": null,
+        "frame": null,
+        "frameEncoded": null,
+        "frameCount": 0,
+        "port": 5000
+    },
+    {
+        "id": 1,
+        "poster": "/stream/1/poster",
+        "name": "Reef Lagoon (Recorded)",
+        "url": "/media/video/2020_08_14_08_09_57_length_300s.mp4",
+        "type": "file",
+        "vCap": null,
+        "frame": null,
+        "frameEncoded": null,
+        "frameCount": 0,
+        "port": 5001
+    }
+]
