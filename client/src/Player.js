@@ -1288,7 +1288,7 @@ class QuickstartModal extends Component {
 	renderPredictOneTooltip = (props) => (
     <Tooltip id="predict-one-tooltip" {...props}>
    		Left-click button in left menu named "Predict-One".  
-			This will send a request with your a snapshot of your bounding boxe's contents to our model for prediction.
+			This will send a request with a snapshot of your bounding box's contents to our model for prediction.
 			NOTE: this button will only be active once a bounding-box has been drawn.
     </Tooltip>
 	);
