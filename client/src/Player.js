@@ -44,6 +44,8 @@ import UnknownFish from './UnknownFish';
 import Fmt from './Fmt';
 import './Player.scss';
 
+import ReactPlayer from 'react-player';
+
 let HTTP_SERVER_STREAM_HOST = process.env.REACT_APP_HOST_ENV === 'PROD' ? process.env.REACT_APP_HTTP_SERVER_STREAM_HOST_PROD : process.env.REACT_APP_HTTP_SERVER_STREAM_HOST_DEV
 let EXPRESS_SERVER_API = process.env.REACT_APP_HOST_ENV === 'PROD' ? process.env.REACT_APP_EXPRESS_SERVER_API_PROD : process.env.REACT_APP_EXPRESS_SERVER_API_DEV
 
@@ -98,6 +100,7 @@ export default withOktaAuth(
 			this.checkUser = this.checkUser.bind(this);
 		
 			this.state = {
+				playing: true,
 				streamId: this.props.match.params.id,
 				streamData: {},
 				threshold: 0.80,
@@ -143,7 +146,15 @@ export default withOktaAuth(
 					show: false,
 					header: "",
 					body: "" 
-				}	
+				},	
+				videoJSOptions: {
+					autoplay: true,
+					controls: true,
+					sources: [{
+						src: "https://manifest.googlevideo.com/api/manifest/hls_playlist/expire/1611015490/ei/4tAFYOW8AoenkwaGwaPIBg/ip/98.35.15.8/id/1nWGig6pQ7Q.1/itag/96/source/yt_live_broadcast/requiressl/yes/ratebypass/yes/live/1/sgoap/gir%3Dyes%3Bitag%3D140/sgovp/gir%3Dyes%3Bitag%3D137/hls_chunk_host/r2---sn-n4v7knlk.googlevideo.com/playlist_duration/30/manifest_duration/30/vprv/1/playlist_type/DVR/initcwndbps/17620/mh/18/mm/44/mn/sn-n4v7knlk/ms/lva/mv/m/mvi/2/pl/21/dover/11/keepalive/yes/mt/1610993551/sparams/expire,ei,ip,id,itag,source,requiressl,ratebypass,live,sgoap,sgovp,playlist_duration,manifest_duration,vprv,playlist_type/sig/AOq0QJ8wRQIgPDlNr-ukj92tkTGqMnWlOR16u_VEBicp6C6Bzch8oXICIQCxgZp_c9XetuXQ90oK_yK9SlETvul0N2fTYceypm-tCA%3D%3D/lsparams/hls_chunk_host,initcwndbps,mh,mm,mn,ms,mv,mvi,pl/lsig/AG3C_xAwRQIgTx4ChuIMoNVGnaXXWIOZfzjWlCsdA8owPcZmbJrEw4YCIQCVVyNnIW-9EDOeFXMOAiiXZ9p5BinQSHEJpKRtq4G4iA%3D%3D/playlist/index.m3u8",
+						type: "application/x-mpegURL"
+					}]	
+				}
 			};
 		}
 
@@ -160,7 +171,9 @@ export default withOktaAuth(
 				// we need to reconnect each time we mount the component since we disconnect on 'componentWillUnmount' below
         socket = io(`${HTTP_SERVER_STREAM_HOST}:${stream_data.port}`)
         socket.connect(`${HTTP_SERVER_STREAM_HOST}:${stream_data.port}`);
-				socket.on(`stream-${stream_data.id}-image`, image => {
+				//socket.on(`stream-${stream_data.id}-image`, image => {
+				socket.on('stream-single-frame', image => {
+					console.log(image);
           /*
            * We stick with this approach for simplicity, instead of approach below.
            */
@@ -332,23 +345,89 @@ export default withOktaAuth(
 				const playBtn = document.getElementById('play');
 				playBtn.disabled = true;
 				playBtn.classList.add("disabled");
+				
+				//this.player.getInternalPlayer().seekTo(Math.max(), true);
+				
+				this.setState({
+					playing: true
+				});
 			} catch (error) {
 				console.log('play:error');
 				console.log(error);
 			}
 		}
 
-		pause() {
+		async pause() {
 			try {
 				socket.off(`stream-${this.state.streamId}-image`);
 			
 				const playBtn = document.getElementById('play');
 				playBtn.disabled = false;
 				playBtn.classList.remove("disabled");
+
+				//const ts = new Date().getTime();
+				const ts = this.player.getInternalPlayer().getCurrentTime();
+				const response = await fetch(`${EXPRESS_SERVER_API}/singleFrame/${ts}`);
+				const data = await response.json();
+					
+				const imageElm = document.getElementById('streamImage');
+				imageElm.src = `data:image/jpeg;base64,${data.image}`;
+
+				//console.log(this.player.getInternalPlayer());
+				console.log(this.player.getInternalPlayer().getDuration());
+				console.log(this.player.getInternalPlayer().getCurrentTime());
+				const t_delta = data.ts - ts;
+				const t_curr = t_delta + this.player.getInternalPlayer().getDuration();
+				//this.player.getInternalPlayer().seekTo(t_curr, true);
+				////const frame = captureVideoFrame(this.player.getInternalPlayer());
+				//const frame = this.captureVideoFrame('html5-main-video', null, 1, 'css');
+				//console.log(frame);
+				this.setState({
+					playing: false
+				});
 			} catch (error) {
 				console.log('pause:error');
 				console.log(error);
 			}
+		}
+
+		captureVideoFrame(video, format, quality, strSelectorType='id') {
+			if (typeof video === 'string') {
+				if (strSelectorType === 'id') {
+					video = document.getElementById(video);
+				} else if (strSelectorType === 'css') {
+					video = document.getElementsByClassName(video)[0];
+				}
+			}
+
+			format = format || 'jpeg';
+			quality = quality || 0.92;
+
+			if (!video || (format !== 'png' && format !== 'jpeg')) {
+				return false;
+			}
+
+			var canvas = document.createElement("CANVAS");
+
+			canvas.width = video.videoWidth;
+			canvas.height = video.videoHeight;
+
+			canvas.getContext('2d').drawImage(video, 0, 0);
+
+			var dataUri = canvas.toDataURL('image/' + format, quality);
+			var data = dataUri.split(',')[1];
+			var mimeType = dataUri.split(';')[0].slice(5)
+
+			var bytes = window.atob(data);
+			var buf = new ArrayBuffer(bytes.length);
+			var arr = new Uint8Array(buf);
+
+			for (var i = 0; i < bytes.length; i++) {
+				arr[i] = bytes.charCodeAt(i);
+			}
+
+			var blob = new Blob([ arr ], { type: mimeType });
+			return { blob: blob, dataUri: dataUri, format: format };
 		}
 		
 		async predict() {
@@ -1048,6 +1127,43 @@ export default withOktaAuth(
 								<source type="video/webm" id="videoSource"></source>
 						</video>
 						<canvas id="canvasImg" height="1080" width="1920"></canvas>*/}
+						{/*<VideoPlayer { ...this.state.videoJSOptions } />*/}
+						<ReactPlayer 
+							ref={player => { this.player = player }}
+							url="https://www.youtube.com/watch?v=1nWGig6pQ7Q&feature=emb_title&ab_channel=CaliforniaAcademyofSciences"
+							playing={this.state.playing}
+							muted={true}
+							config={{
+								youtube: {
+									playerVars: { 
+										showinfo: 0,
+										modestbranding: 1,
+										controls: 0,
+										autoplay: 1,
+										enablejsapi: 1
+									}
+								},
+								file: {
+									attributes: {
+										crossorigin: 'anonymous'
+									}
+								}
+							}}
+						/>
+						<ReactPlayer 
+							url={EXPRESS_SERVER_API + "/mp4"} 
+							type="video/mp4" 
+							controls={false} 
+							muted={true} 
+							playing={this.state.playing} 
+							config={{
+								file: {
+									attributes: {
+										crossorigin: 'anonymous'
+									}
+								}
+							}}
+						/>
 						<Toast 
 							onClose={() => this.setShowToast(false)} 
 							show={this.state.toast.show} 

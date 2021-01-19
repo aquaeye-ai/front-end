@@ -107,6 +107,28 @@ app.get('/stream/:id/data', function(req, res) {
   res.json(streams[id]);
 });
 
+//GET, /mp4
+app.get('/mp4', async (req, res) => {
+  res.sendFile(streams[1].url, { root: __dirname });
+});
+
+//GET, singleframe
+app.get('/singleFrame/:ts', (req, res) => {
+  try {
+    console.log(req.params.ts);
+    streams[0].vCap.set(cv.CAP_PROP_POS_MSEC, parseFloat(req.params.ts));
+    streams[0].vCap.set(cv.CAP_PROP_BUFFERSIZE, 1);
+    ts = new Date().getTime();
+    const frame = streams[0].vCap.read();
+    const frameEncoded = cv.imencode('.jpg', frame).toString('base64');
+    //console.log(frameEncoded);
+    //io.emit('stream-single-frame', frameEncoded);
+    res.json({ image: frameEncoded, ts: ts });
+  } catch (error) {
+    console.error(error);
+  }
+});
+
 //// GET, /stream/:id/poster
 //app.get('/stream/:id/poster', function(req, res) {
 //  //thumbsupply.generateThumbnail(`assets/${req.params.id}.mp4`)
