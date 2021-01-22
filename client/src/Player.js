@@ -362,7 +362,8 @@ export default withOktaAuth(
 					K: this.state.numClasses,
 					data: imageElm.src
 				},
-				rect: this.state.rect
+				rect: this.state.rect,
+        model: this.state.streamData.model
 			}
 			const config = {
 				method: 'POST',

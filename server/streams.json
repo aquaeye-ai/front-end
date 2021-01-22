@@ -9,7 +9,8 @@
         "frame": null,
         "frameEncoded": null,
         "frameCount": 0,
-        "port": 5000
+        "port": 5000,
+        "model": "reef_lagoon_live"
     },
     {
         "id": 1,
@@ -21,6 +22,7 @@
         "frame": null,
         "frameEncoded": null,
         "frameCount": 0,
-        "port": 5001
+        "port": 5001,
+        "model": "reef_lagoon_recording"
     }
 ]
