@@ -171,7 +171,8 @@ app.post('/predict/one', async function(req, res) {
       height: rect_coords_adjusted.h, 
       width: rect_coords_adjusted.w, 
       depth: req.body.frame.depth,
-      image: selection_enc 
+      image: selection_enc, 
+      model: req.body.model 
     };
     const model_response = await axios.post(`http://${process.env.REACT_APP_MODEL_SERVER_IP}:${process.env.REACT_APP_MODEL_SERVER_PORT}/predict/one`, json_payload);
 
