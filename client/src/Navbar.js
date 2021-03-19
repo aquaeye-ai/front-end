@@ -50,7 +50,16 @@ export default withOktaAuth(class AppNavbar extends React.Component {
 
     return (
       <Navbar bg="dark" variant="dark" expand="md">
-        <Navbar.Brand href="/">Aquaeye AI</Navbar.Brand>
+        <Navbar.Brand href="/">
+          <img 
+            alt=""
+            src="/android-chrome-512x512.png"
+            width="30"
+            height="30"
+            className="d-inline-block align-top"
+          />{' '}
+          Aquaeye AI
+        </Navbar.Brand>
         <Navbar.Toggle aria-controls="navbar-nav" />
         {collapseMenu}
       </Navbar>
