@@ -174,7 +174,34 @@ app.post('/predict/one', async function(req, res) {
       image: selection_enc, 
       model: req.body.model 
     };
-    const model_response = await axios.post(`http://${process.env.REACT_APP_MODEL_SERVER_IP}:${process.env.REACT_APP_MODEL_SERVER_PORT}/predict/one`, json_payload);
+    const model_response = await axios.post(`http://${process.env.REACT_APP_MODEL_SERVER_IP}:${process.env.REACT_APP_MODEL_SERVER_PORT}/predict`, json_payload);
+
+    // return model api response
+    res.json(model_response.data);
+  } catch (error) {
+    console.error(error);
+  }
+});
+
+// POST, find
+app.post('/find', async function(req, res) {
+  try {
+    // resize image to original size and convert base64 encoded string data to Mat for use with opencv: https://github.com/justadudewhohacks/opencv4nodejs
+    base64_data = req.body.frame.data.replace('data:image/jpeg;base64','');
+    frame_buffer = Buffer.from(base64_data, 'base64');
+    cv_frame = cv.imdecode(frame_buffer);
+		cv_frame = cv_frame.resize(1080, 1920); // resize to original frame size (front-end alters size to fit page)
+    
+    // base64 encode to transmit over network
+		const cv_frame_enc = cv.imencode('.jpg', cv_frame).toString('base64'); 
+
+    // send request to model api
+    const json_payload = {
+      id: req.body.frame.id, 
+      image: cv_frame_enc, // base64 encode to transmit over network
+      model: req.body.model 
+    };
+    const model_response = await axios.post(`http://${process.env.REACT_APP_MODEL_SERVER_IP}:${process.env.REACT_APP_MODEL_SERVER_PORT}/find`, json_payload);
 
     // return model api response
     res.json(model_response.data);

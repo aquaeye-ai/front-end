@@ -13,7 +13,8 @@ import {
 	Nav,
 	Modal,
 	Form,
-	Toast
+	Toast,
+  Spinner
 } from 'react-bootstrap';
 import { Drawer } from 'antd';
 import {
@@ -33,7 +34,9 @@ import {
 	faHourglassHalf,
 	faArrowsAltH,
   faReply,
-	faCheck
+	faCheck,
+	faMap,
+	faBinoculars
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Header from './Header';
@@ -64,6 +67,7 @@ export default withOktaAuth(
 			this.undo = this.undo.bind(this);
 			this.handleK = this.handleK.bind(this);
 			this.predict = this.predict.bind(this);
+			this.find = this.find.bind(this);
 			this.handleThreshold = this.handleThreshold.bind(this);
 			this.hideShowPredictOneResultsFilters = this.hideShowPredictOneResultsFilters.bind(this);
 
@@ -98,6 +102,7 @@ export default withOktaAuth(
 			this.checkUser = this.checkUser.bind(this);
 		
 			this.state = {
+				loading: true,
 				streamId: this.props.match.params.id,
 				streamData: {},
 				threshold: 0.80,
@@ -184,6 +189,7 @@ export default withOktaAuth(
 				const num_classes_res = await fetch(`${EXPRESS_SERVER_API}/predict/num-classes`, num_classes_req_settings);
 				const num_classes_data = await num_classes_res.json(); 
 				this.setState({ 
+					loading: false,
 					numClasses: num_classes_data.num_classes,
 				}); 
 			} catch (error) {
@@ -332,6 +338,10 @@ export default withOktaAuth(
 				const playBtn = document.getElementById('play');
 				playBtn.disabled = true;
 				playBtn.classList.add("disabled");
+				
+        const findBtn = document.getElementById('find');
+				findBtn.disabled = false;
+				findBtn.classList.remove("disabled");
 			} catch (error) {
 				console.log('play:error');
 				console.log(error);
@@ -339,6 +349,10 @@ export default withOktaAuth(
 		}
 
 		pause() {
+			const findBtn = document.getElementById('find');
+      findBtn.disabled = true;
+      findBtn.classList.add("disabled");
+
 			try {
 				socket.off(`stream-${this.state.streamId}-image`);
 			
@@ -352,6 +366,15 @@ export default withOktaAuth(
 		}
 		
 		async predict() {
+			// show loading spinner while work is being done
+			this.setState({
+				loading: true
+			});
+      
+			const findBtn = document.getElementById('find');
+      findBtn.disabled = true;
+      findBtn.classList.add("disabled");
+
 			const imageElm = document.getElementById('streamImage');
 			const jsonData = {
 				frame: {
@@ -363,7 +386,7 @@ export default withOktaAuth(
 					data: imageElm.src
 				},
 				rect: this.state.rect,
-        model: this.state.streamData.model
+        model: this.state.streamData.models.image_classification
 			}
 			const config = {
 				method: 'POST',
@@ -379,6 +402,7 @@ export default withOktaAuth(
 				const data = await response.json();
 
 				this.setState({
+					loading: false,
 					predictOneResults: data,
 					parentPredictOneDrawerVisible: true,
 
@@ -413,6 +437,62 @@ export default withOktaAuth(
 		//    console.log(error);
 		//  }
 		//}
+    
+    async find() {
+			// auto pause when drawing 
+			this.pause();
+
+			// show loading spinner while work is being done
+			this.setState({
+				loading: true
+			});
+
+			const playBtn = document.getElementById('play');
+			playBtn.disabled = false;
+			playBtn.classList.remove("disabled");
+      
+      const predictOneBtn = document.getElementById('predictOne');
+      predictOneBtn.disabled = true;
+      predictOneBtn.classList.add("disabled");
+			
+      const findBtn = document.getElementById('find');
+      findBtn.disabled = true;
+      findBtn.classList.add("disabled");
+
+			const imageElm = document.getElementById('streamImage');
+			const jsonData = {
+				frame: {
+					id: new Date().getTime(),
+					height: 756,
+					width: 1344,
+					depth: 3,
+					data: imageElm.src
+				},
+        model: this.state.streamData.models.object_detection
+			}
+			const config = {
+				method: 'POST',
+				body: JSON.stringify(jsonData),
+				headers: {
+					'Accept': 'application/json',
+					'Content-Type': 'application/json'
+				}
+			};
+
+			try {
+				const response = await fetch(`${EXPRESS_SERVER_API}/find`, config);
+				const data = await response.json();
+
+				this.setState({
+					loading: false,
+					findResult: data
+				});
+
+        imageElm.src = `data:image/jpeg;base64,${data['image']}`
+			} catch (error) {
+				console.log(error);
+			}
+    }
 		
 		undo() {
 			try {
@@ -512,6 +592,12 @@ export default withOktaAuth(
 		renderFishGalleryTooltip = (props) => (
 			<Tooltip id="fish-gallery-tooltip" {...props}>
 				View gallery of fish species in this exhibit
+			</Tooltip>
+		);
+		
+    renderFindTooltip = (props) => (
+			<Tooltip id="find-all-tooltip" {...props}>
+				Find and label all fish currently in view
 			</Tooltip>
 		);
 
@@ -1133,8 +1219,21 @@ export default withOktaAuth(
 											>
 												<div className="btn-container">
 													<Button onClick={this.showParentFishGalleryDrawer}>
-														In this exhibit	
-														<FontAwesomeIcon icon={faFish} />
+														Field Guide	
+														<FontAwesomeIcon icon={faMap} />
+													</Button>
+												</div>
+											</OverlayTrigger>
+											
+                      <OverlayTrigger
+												placement="bottom"
+												delay={{ show: 250, hide: 400 }}
+												overlay={this.renderFindTooltip}
+											>
+												<div className="btn-container">
+													<Button id="find" onClick={this.find}>
+														Find
+														<FontAwesomeIcon icon={faBinoculars} />
 													</Button>
 												</div>
 											</OverlayTrigger>
@@ -1244,6 +1343,7 @@ export default withOktaAuth(
 										<div className="stream-image-inner-container">
 											<Image id="streamImage" alt="stream"/>
 											<canvas id="streamCanvas"></canvas>
+                     	{this.state.loading && <Spinner animation="border" role="status" variant="primary" className=""></Spinner>}
 										</div>
 									</div>
 								</Col>

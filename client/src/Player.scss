@@ -121,6 +121,11 @@
     .container-fluid {
       .row {
         .col, .col-10 {
+          div.spinner-border {
+            margin-left: 662px;
+            margin-top: 378px;
+          }
+
           .stream-image-outer-container {
             /* scale down 1920x1080 to something smaller while retaining 16:9 aspect ratio */
             width: 1344px;

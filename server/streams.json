@@ -10,7 +10,10 @@
         "frameEncoded": null,
         "frameCount": 0,
         "port": 5000,
-        "model": "reef_lagoon_live"
+        "models": {
+          "image_classification": "reef_lagoon_live",
+          "object_detection": "faster_rcnn_resnet101_coco_2018_01_28_4_05_2021_8857"
+        }
     },
     {
         "id": 1,
@@ -23,6 +26,9 @@
         "frameEncoded": null,
         "frameCount": 0,
         "port": 5001,
-        "model": "reef_lagoon_recording"
+        "models": {
+          "image_classification": "reef_lagoon_recording",
+          "object_detection": "faster_rcnn_resnet101_coco_2018_01_28_4_05_2021_8857"
+        }
     }
 ]
