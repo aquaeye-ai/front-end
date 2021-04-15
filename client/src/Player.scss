@@ -170,6 +170,10 @@
             border: solid 2px $yale-blue;
             border-radius: 3px;
 
+            &.hidden {
+              display: none;
+            }
+
             h1 {
               padding: 5px;
               font-size: 16px;

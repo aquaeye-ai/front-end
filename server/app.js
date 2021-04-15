@@ -199,7 +199,8 @@ app.post('/find', async function(req, res) {
     const json_payload = {
       id: req.body.frame.id, 
       image: cv_frame_enc, // base64 encode to transmit over network
-      model: req.body.model 
+      model: req.body.model,
+      threshold: req.body.threshold
     };
     const model_response = await axios.post(`http://${process.env.REACT_APP_MODEL_SERVER_IP}:${process.env.REACT_APP_MODEL_SERVER_PORT}/find`, json_payload);
 

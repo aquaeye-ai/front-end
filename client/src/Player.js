@@ -68,8 +68,10 @@ export default withOktaAuth(
 			this.handleK = this.handleK.bind(this);
 			this.predict = this.predict.bind(this);
 			this.find = this.find.bind(this);
-			this.handleThreshold = this.handleThreshold.bind(this);
+			this.handlePredictOneThreshold = this.handlePredictOneThreshold.bind(this);
+			this.handleFindThreshold = this.handleFindThreshold.bind(this);
 			this.hideShowPredictOneResultsFilters = this.hideShowPredictOneResultsFilters.bind(this);
+			this.hideShowFindResultsFilters = this.hideShowFindResultsFilters.bind(this);
 
 			// mouse events
 			this.mouseDown = this.mouseDown.bind(this);
@@ -105,7 +107,8 @@ export default withOktaAuth(
 				loading: true,
 				streamId: this.props.match.params.id,
 				streamData: {},
-				threshold: 0.80,
+				predictOneThreshold: 0.80,
+				findThreshold: 0.25,
 				K: 1,
 				drag: false,
 				rect: {
@@ -142,6 +145,7 @@ export default withOktaAuth(
 				},
 				numClasses: 1,
 				showPredictOneResultsFilters: false,
+				showFindResultsFilters: false,
 				showQuickstartModal: false,
 				userInfo: null,
 				toast: {
@@ -238,7 +242,10 @@ export default withOktaAuth(
 			predictOneResultsBtn.classList.add("disabled");
 			
 			const predictOneResultsFilters = document.getElementById('predictOneResultsFilters');
-			predictOneResultsFilters.style.visibility = 'hidden';
+     	predictOneResultsFilters.classList.add("hidden");
+			
+			const findResultsFilters = document.getElementById('findResultsFilters');
+			findResultsFilters.classList.add("hidden")
 		}
 
 		/* function came from: https://developer.okta.com/docs/guides/sign-into-spa/react/user-info/ */
@@ -256,6 +263,8 @@ export default withOktaAuth(
 		mouseDown(e) {
 			// auto pause when drawing 
 			this.pause();
+			
+			const imageElm = document.getElementById('streamImage');
 
 			const playBtn = document.getElementById('play');
 			playBtn.disabled = false;
@@ -268,7 +277,8 @@ export default withOktaAuth(
 					h: 0,
 					w: 0 
 				},
-				drag: true
+				drag: true,
+				frame: imageElm.src
 			});
 
 			this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -443,8 +453,10 @@ export default withOktaAuth(
 			this.pause();
 
 			// show loading spinner while work is being done
+			const imageElm = document.getElementById('streamImage');
 			this.setState({
-				loading: true
+				loading: true,
+				frame: imageElm.src
 			});
 
 			const playBtn = document.getElementById('play');
@@ -459,7 +471,6 @@ export default withOktaAuth(
       findBtn.disabled = true;
       findBtn.classList.add("disabled");
 
-			const imageElm = document.getElementById('streamImage');
 			const jsonData = {
 				frame: {
 					id: new Date().getTime(),
@@ -468,7 +479,8 @@ export default withOktaAuth(
 					depth: 3,
 					data: imageElm.src
 				},
-        model: this.state.streamData.models.object_detection
+        model: this.state.streamData.models.object_detection,
+				threshold: this.state.findThreshold
 			}
 			const config = {
 				method: 'POST',
@@ -497,6 +509,8 @@ export default withOktaAuth(
 		undo() {
 			try {
 				this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+				const imageElm = document.getElementById('streamImage');
+				imageElm.src = this.state.frame
 
 				const predictOneBtn = document.getElementById('predictOne');
 				predictOneBtn.disabled = true;
@@ -505,6 +519,10 @@ export default withOktaAuth(
 				const predictOneResultsBtn = document.getElementById('predictOneResults');
 				predictOneResultsBtn.disabled = true;
 				predictOneResultsBtn.classList.add("disabled");
+      
+				const findBtn = document.getElementById('find');
+				findBtn.disabled = false;
+				findBtn.classList.remove("disabled");
 			} catch (error) {
 				console.log('undo:error');
 				console.log(error);
@@ -515,13 +533,13 @@ export default withOktaAuth(
 			const predictOneResultsFilters = document.getElementById('predictOneResultsFilters');
 
 			if (this.state.showPredictOneResultsFilters === true) {
-				predictOneResultsFilters.style.visibility = 'hidden';
+      	predictOneResultsFilters.classList.add("hidden");
 				
 				this.setState({
 					showPredictOneResultsFilters: false
 				});
 			} else {
-				predictOneResultsFilters.style.visibility = 'visible';
+      	predictOneResultsFilters.classList.remove("hidden");
 				
 				this.setState({
 					showPredictOneResultsFilters: true
@@ -529,9 +547,33 @@ export default withOktaAuth(
 			}
 		}
 
-		handleThreshold(e) {
+		hideShowFindResultsFilters() {
+			const findResultsFilters = document.getElementById('findResultsFilters');
+
+			if (this.state.showFindResultsFilters === true) {
+				findResultsFilters.classList.add("hidden")
+				
+				this.setState({
+					showFindResultsFilters: false
+				});
+			} else {
+				findResultsFilters.classList.remove("hidden")
+				
+				this.setState({
+					showFindResultsFilters: true
+				});
+			}
+		}
+
+		handlePredictOneThreshold(e) {
 			this.setState({
-				threshold: parseFloat(e.target.value).toFixed(2)
+				predictOneThreshold: parseFloat(e.target.value).toFixed(2)
+			});
+		}
+		
+		handleFindThreshold(e) {
+			this.setState({
+				findThreshold: parseFloat(e.target.value).toFixed(2)
 			});
 		}
 		
@@ -548,14 +590,26 @@ export default withOktaAuth(
 		);
 
 		renderHideShowPredictOneResultsFiltersTooltip = (props) => (
-			<Tooltip id="hide-show-results-filters-tooltip" {...props}>
-				{this.state.showPredictOneResultsFilters ? `Hide predict-one results filters` : `Show controls that filter predict-one results output`}
+			<Tooltip id="hide-show-predict-one-results-filters-tooltip" {...props}>
+				{this.state.showPredictOneResultsFilters ? `Hide predict results filters` : `Show controls that filter predict results output`}
+			</Tooltip>
+		);
+		
+		renderHideShowFindResultsFiltersTooltip = (props) => (
+			<Tooltip id="hide-show-find-results-filters-tooltip" {...props}>
+				{this.state.showFindResultsFilters ? `Hide find results filters` : `Show controls that filter find results output`}
 			</Tooltip>
 		);
 
-		renderThresholdTooltip = (props) => (
-			<Tooltip id="threshold-tooltip" {...props}>
+		renderPredictOneThresholdTooltip = (props) => (
+			<Tooltip id="predict-one-threshold-tooltip" {...props}>
 				Threshold that must be met before a given class prediction by model is asserted correct and shown in results panel
+			</Tooltip>
+		);
+		
+		renderFindThresholdTooltip = (props) => (
+			<Tooltip id="find-threshold-tooltip" {...props}>
+				Threshold that must be met before a bounding box is shown
 			</Tooltip>
 		);
 		
@@ -579,13 +633,13 @@ export default withOktaAuth(
 		
 		renderPredictOneResultsTooltip = (props) => (
 			<Tooltip id="predict-one-tooltip" {...props}>
-				Show predict-one results 
+				Show predict results 
 			</Tooltip>
 		);
 		
 		renderUndoTooltip = (props) => (
 			<Tooltip id="undo-tooltip" {...props}>
-				Remove selection and invalidate predict-one results
+				Remove selection and invalidate predict results
 			</Tooltip>
 		);
 		
@@ -854,7 +908,7 @@ export default withOktaAuth(
 						Object.keys(gallery_info).map((key, idx) => {
 							let fish = gallery_info[key]
 
-							if (fish.common_group_name === r_key && this.state.predictOneResults.top_k_scores[r_idx] > this.state.threshold && (r_idx+1) <= this.state.K) {
+							if (fish.common_group_name === r_key && this.state.predictOneResults.top_k_scores[r_idx] > this.state.predictOneThreshold && (r_idx+1) <= this.state.K) {
 								noMatches = false
 
 								if (foundFirst === true) {
@@ -972,7 +1026,7 @@ export default withOktaAuth(
 										<div className="divider"></div>
 										<h3>
 											Try relaxing the model filters under <span className="highlight note">Results Filters</span> in the left 
-											menu and then revisit these results by clicking <span className="highlight note">Predict-One Results</span> <br/> 
+											menu and then revisit these results by clicking <span className="highlight note">Predict Results</span> <br/> 
 											e.g. lower the <span className="highlight note">Threshold</span> or 
 											increase <span className="highlight note">K</span> to widen the set of possible matches</h3>
 										<Image src={fish.thumbnail.url} fluid rounded/>
@@ -1245,7 +1299,7 @@ export default withOktaAuth(
 											>
 												<div className="btn-container">
 													<Button id="predictOne" onClick={this.predict}>
-														Predict-One
+														Predict
 														<FontAwesomeIcon icon={faBrain} />
 													</Button>
 												</div>
@@ -1258,7 +1312,7 @@ export default withOktaAuth(
 											>
 												<div className="btn-container">
 													<Button id="predictOneResults" onClick={this.showParentPredictOneResultsDrawer}>
-														Predict-One Results	
+														Predict Results	
 														<FontAwesomeIcon icon={faPoll} />
 													</Button>
 												</div>
@@ -1271,24 +1325,24 @@ export default withOktaAuth(
 											>
 												<div className="btn-container">
 													<Button id="hideShowPredictOneResultsFilters" onClick={this.hideShowPredictOneResultsFilters}>
-														{this.state.showPredictOneResultsFilters ? `Hide Results Filters` : `Show Results Filters`}
+														{this.state.showPredictOneResultsFilters ? `Hide Predict Filters` : `Show Predict Filters`}
 														<FontAwesomeIcon icon={faFilter} />
 													</Button>
 												</div>
 											</OverlayTrigger>
 											
 											<div id="predictOneResultsFilters" className="results-filters">
-												<h1>Predict-One Results Filters</h1>
+												<h1>Predict Results Filters</h1>
 
 												<div className="slider-control">
 													<OverlayTrigger
 														placement="bottom"
 														delay={{ show: 250, hide: 400 }}
-														overlay={this.renderThresholdTooltip}
+														overlay={this.renderPredictOneThresholdTooltip}
 													>
-														<p>Prediction Threshold: {this.state.threshold}</p>
+														<p>Prediction Threshold: {this.state.predictOneThreshold}</p>
 													</OverlayTrigger>
-													<input id="sliderThreshold" type="range" value={this.state.threshold} min="0" max="1" step="any" list="steplistThreshold" onChange={this.handleThreshold} />
+													<input id="sliderPredictOneThreshold" type="range" value={this.state.predictOneThreshold} min="0" max="1" step="any" list="steplistThreshold" onChange={this.handlePredictOneThreshold} />
 													<datalist id="steplistThreshold">
 														<option value="0">0</option>
 														<option value="1">1</option>
@@ -1313,6 +1367,39 @@ export default withOktaAuth(
 													</datalist>
 												</div>
 											</div>
+											
+											<OverlayTrigger
+												placement="bottom"
+												delay={{ show: 250, hide: 400 }}
+												overlay={this.renderHideShowFindResultsFiltersTooltip}
+											>
+												<div className="btn-container">
+													<Button id="hideShowFindResultsFilters" onClick={this.hideShowFindResultsFilters}>
+														{this.state.showFindResultsFilters ? `Hide Find Filters` : `Show Find Filters`}
+														<FontAwesomeIcon icon={faFilter} />
+													</Button>
+												</div>
+											</OverlayTrigger>
+											
+											<div id="findResultsFilters" className="results-filters">
+												<h1>Find Results Filters</h1>
+
+												<div className="slider-control">
+													<OverlayTrigger
+														placement="bottom"
+														delay={{ show: 250, hide: 400 }}
+														overlay={this.renderFindThresholdTooltip}
+													>
+														<p>Prediction Threshold: {this.state.findThreshold}</p>
+													</OverlayTrigger>
+													<input id="sliderFindThreshold" type="range" value={this.state.findThreshold} min="0" max="1" step="any" list="steplistThreshold" onChange={this.handleFindThreshold} />
+													<datalist id="steplistThreshold">
+														<option value="0">0</option>
+														<option value="1">1</option>
+													</datalist>
+												</div>
+
+											</div>
 										</ButtonGroup>
 									</div>
 
@@ -1327,7 +1414,7 @@ export default withOktaAuth(
 									</Drawer>
 									
 									<Drawer
-										title="Predict-One Results"
+										title="Predict Results"
 										width={520}
 										closable={false}
 										onClose={this.onCloseParentPredictOneDrawer}
@@ -1388,7 +1475,7 @@ class QuickstartModal extends Component {
 
 	renderPredictOneTooltip = (props) => (
     <Tooltip id="predict-one-tooltip" {...props}>
-   		Left-click button in left menu named "Predict-One".  
+   		Left-click button in left menu named "Predict".  
 			This will send a request with a snapshot of your bounding box's contents to our model for prediction.
 			NOTE: this button will only be active once a bounding-box has been drawn.
     </Tooltip>
@@ -1408,7 +1495,7 @@ class QuickstartModal extends Component {
 
 	renderPredictOneResultsBtnTooltip = (props) => (
     <Tooltip id="predict-one-results-btn-tooltip" {...props}>
-			You can revisit your last predict-one results by left-clicking this button in the left menu	
+			You can revisit your last predict results by left-clicking this button in the left menu	
     </Tooltip>
 	);
 
@@ -1429,7 +1516,7 @@ class QuickstartModal extends Component {
 					<Container fluid>
 						<Row>
 							<Col xs={12}>
-								<h4>Predict-One</h4>
+								<h4>Predict</h4>
 							</Col>
 						</Row>
 						<Row>
@@ -1497,7 +1584,7 @@ class QuickstartModal extends Component {
 										overlay={this.renderPredictOneTooltip}
 									>
 										<Button id="predictOne">
-											Predict-One
+											Predict
 											<FontAwesomeIcon icon={faBrain} className="space-l" />
 										</Button>
 									</OverlayTrigger>
@@ -1539,7 +1626,7 @@ class QuickstartModal extends Component {
 										overlay={this.renderPredictOneResultsBtnTooltip}
 									>
 										<Button id="predictOneResults">
-											Predict-One Results
+											Predict Results
 											<FontAwesomeIcon icon={faPoll} className="space-l" />
 										</Button>
 									</OverlayTrigger>
