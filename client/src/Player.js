@@ -499,8 +499,47 @@ export default withOktaAuth(
 					loading: false,
 					findResult: data
 				});
+				
+        // draw boxes/labels
+        // box coordinates: [ymin, xmin, ymax, xmax]
+        for (var i = 0; i < data.detection_boxes.length; i++) {
+          var score = data.detection_scores[i];
 
-        imageElm.src = `data:image/jpeg;base64,${data['image']}`
+          // only draw boxes that meet or exceed the threshold
+          if (score >= this.state.findThreshold) {
+            var box = data.detection_boxes[i];
+            var label = data.detection_classes[i];
+            label = data.category_index[label].name;
+
+            // draw box
+            this.ctx.lineWidth = 2.0;
+            this.ctx.strokeStyle = 'rgb(102, 221, 170)';
+            this.ctx.fillStyle = 'rgba(225, 225, 225, 0.125)';
+
+            var ymin_b = box[0]; 
+            var xmin_b = box[1]; 
+            var ymax_b = box[2];
+            var xmax_b = box[3];
+
+            ymin_b = ymin_b * 756;
+            xmin_b = xmin_b * 1344;
+            ymax_b = ymax_b * 756;
+            xmax_b = xmax_b * 1344;
+
+            var w_b = xmax_b - xmin_b + 1;
+            var h_b = ymax_b - ymin_b + 1;
+
+            this.ctx.strokeRect(xmin_b, ymin_b, w_b, h_b);
+            this.ctx.fillRect(xmin_b, ymin_b, w_b, h_b);
+
+            // draw label
+            var ymin_l = ymin_b - 3;
+            var xmin_l = xmin_b;
+            this.ctx.font = "10px Arial";
+            this.ctx.fillStyle = "#FF634D";
+            this.ctx.fillText(`${label}: ${(score*1e2).toFixed(1)}%`, xmin_l, ymin_l)
+          }
+        }
 			} catch (error) {
 				console.log(error);
 			}
@@ -509,8 +548,6 @@ export default withOktaAuth(
 		undo() {
 			try {
 				this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-				const imageElm = document.getElementById('streamImage');
-				imageElm.src = this.state.frame
 
 				const predictOneBtn = document.getElementById('predictOne');
 				predictOneBtn.disabled = true;
@@ -639,7 +676,7 @@ export default withOktaAuth(
 		
 		renderUndoTooltip = (props) => (
 			<Tooltip id="undo-tooltip" {...props}>
-				Remove selection and invalidate predict results
+				Remove selection and invalidate predict and find results
 			</Tooltip>
 		);
 		
@@ -1260,7 +1297,7 @@ export default withOktaAuth(
 											>
 												<div className="btn-container">
 													<Button id="undo" onClick={this.undo}>
-														Undo
+														Reset
 														<FontAwesomeIcon icon={faUndo} />
 													</Button>
 												</div>
