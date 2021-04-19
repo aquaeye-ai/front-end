@@ -36,7 +36,8 @@ import {
   faReply,
 	faCheck,
 	faMap,
-	faBinoculars
+	faBinoculars,
+  faTv
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Header from './Header';
@@ -1536,6 +1537,19 @@ class QuickstartModal extends Component {
     </Tooltip>
 	);
 
+	renderFindTooltip = (props) => (
+    <Tooltip id="find-tooltip" {...props}>
+   		Left-click button in left menu named "Find".  
+			This will send a request with a snapshot of the current frame in the livestream to our model for prediction.
+    </Tooltip>
+	);
+	
+  renderFindResultsTooltip = (props) => (
+    <Tooltip id="find-results-tooltip" {...props}>
+      The current frame in the livestream will be automatically updated with boxes/labels for any fish the model finds
+    </Tooltip>
+	);
+
 	render() {
 		return (
 			<Modal
@@ -1667,6 +1681,66 @@ class QuickstartModal extends Component {
 											<FontAwesomeIcon icon={faPoll} className="space-l" />
 										</Button>
 									</OverlayTrigger>
+								</div>
+							</Col>
+						</Row>
+
+            <Row className="separator"></Row>
+
+						<Row>
+							<Col xs={12}>
+								<h4>Find</h4>
+							</Col>
+						</Row>
+
+						<Row>
+							<Col xs={2}>
+								<div className="row-header">
+									Step 1
+								</div>
+							</Col>
+							<Col xs={10}>
+								<div className="icon-container">
+									<OverlayTrigger
+										placement="bottom"
+										delay={{ show: 250, hide: 400 }}
+										overlay={this.renderFindTooltip}
+									>
+										<Button id="find">
+											Find
+											<FontAwesomeIcon icon={faBinoculars} className="space-l" />
+										</Button>
+									</OverlayTrigger>
+								</div>
+							</Col>
+						</Row>
+						
+						<Row>
+							<Col xs={2}>
+								<div className="row-header">
+									Step 2
+								</div>
+							</Col>
+							<Col xs={10}>
+								<div className="icon-container">
+									<OverlayTrigger
+										placement="bottom"
+										delay={{ show: 250, hide: 400 }}
+										overlay={this.renderWaitTooltip}
+									>
+										<FontAwesomeIcon icon={faHourglassHalf} size="3x" className="space-l-r has-hover" />
+									</OverlayTrigger>
+									
+									<FontAwesomeIcon icon={faArrowRight} className="space-l-r" />
+									
+									<OverlayTrigger
+										placement="bottom"
+										delay={{ show: 250, hide: 400 }}
+										overlay={this.renderFindResultsTooltip}
+									>
+										<FontAwesomeIcon icon={faTv} size="3x" className="space-l-r has-hover" />
+									</OverlayTrigger>
+								
 								</div>
 							</Col>
 						</Row>

@@ -25,6 +25,18 @@
       }
     } 
 
+    .modal-body {
+      .container-fluid {
+        .row {
+          &.separator {
+            border-top: 1px dotted;
+            border-bottom: 1px dotted;
+            margin-bottom: 16px; // match the padding above "Find" section
+          }
+        }
+      }
+    }
+
     .modal-footer {
       border-color: $yale-blue;
 
