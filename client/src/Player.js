@@ -44,8 +44,10 @@ import Header from './Header';
 import Body from './Body';
 import Footer from './Footer';
 import ReefLagoonDatabase from './ReefLagoonDatabase';
+import ColorMapping from './ColorMapping';
 import UnknownFish from './UnknownFish';
 import Fmt from './Fmt';
+import Utils from './Utils';
 import './Player.scss';
 
 let HTTP_SERVER_STREAM_HOST = process.env.REACT_APP_HOST_ENV === 'PROD' ? process.env.REACT_APP_HTTP_SERVER_STREAM_HOST_PROD : process.env.REACT_APP_HTTP_SERVER_STREAM_HOST_DEV
@@ -511,10 +513,13 @@ export default withOktaAuth(
             var box = data.detection_boxes[i];
             var label = data.detection_classes[i];
             label = data.category_index[label].name;
+            label = label.replace(' ', '_');
+            var color_hex = ColorMapping[label].color;
+            var color_rgb = Utils.hexToRgb(color_hex);
 
             // draw box
             this.ctx.lineWidth = 2.0;
-            this.ctx.strokeStyle = 'rgb(102, 221, 170)';
+            this.ctx.strokeStyle = `rgb(${color_rgb['r']}, ${color_rgb['g']}, ${color_rgb['b']})`;
             this.ctx.fillStyle = 'rgba(225, 225, 225, 0.125)';
 
             var ymin_b = box[0]; 
